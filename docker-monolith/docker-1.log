@@ -1,0 +1,43 @@
+REPOSITORY            TAG                 IMAGE ID            CREATED             SIZE
+tgz/ubuntu-tmp-file   latest              63e0c42e14e3        About an hour ago   116MB
+ubuntu                16.04               a51debf7e1eb        16 hours ago        116MB
+nginx                 latest              e81eb098537d        4 days ago          109MB
+hello-world           latest              4ab4c602aa5e        2 months ago        1.84kB
+
+As we can see image have links for parent and container. And images have Layers while containers have not. 
+So it confirms the nature of immages and container - Images are frozen immutable snapshots of live containers. Containers are running (or stopped) instances of some image.
+
+### Image ###
+$ > grep a51debf7e1eb2018400cef1e4b01f2e9f591f6c739de7b5d6c142f954f3715a7 inspect_63e0c42e14e3_image
+        "Parent": "sha256:a51debf7e1eb2018400cef1e4b01f2e9f591f6c739de7b5d6c142f954f3715a7",
+
+$ > grep 9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7 inspect_63e0c42e14e3_image
+        "Container": "9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7",
+
+$ > grep -i layers inspect_63e0c42e14e3_image
+            "Type": "layers",
+            "Layers": [
+---
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:41c002c8a6fd36397892dc6dc36813aaa1be3298be4de93e4fe1f40b9c358d99",
+                "sha256:647265b9d8bc572a858ab25a300c07c0567c9124390fd91935430bf947ee5c2a",
+                "sha256:819a824caf709f224c414a56a2fa0240ea15797ee180e73abe4ad63d3806cae5",
+                "sha256:3db5746c911ad8c3398a6b72aa30580b25b6edb130a148beed4d405d9c345a29",
+                "sha256:058c1c8b84c58bf5a739ff2db969665875eeaa50e75e3cd1d13257bd83b89f0a"
+
+### Container ###
+
+$ > grep a51debf7e1eb2018400cef1e4b01f2e9f591f6c739de7b5d6c142f954f3715a7 inspect_9bb5e91b1730_container
+        "Image": "sha256:a51debf7e1eb2018400cef1e4b01f2e9f591f6c739de7b5d6c142f954f3715a7",
+
+$ > grep 9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7 inspect_9bb5e91b1730_container
+        "Id": "9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7",
+        "ResolvConfPath": "/var/lib/docker/containers/9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7/hostname",
+        "HostsPath": "/var/lib/docker/containers/9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7/hosts",
+        "LogPath": "/var/lib/docker/containers/9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7/9bb5e91b1730d5763c38c8795d5755d74a8f58f3a56d684b8f2c457194bf57c7-json.log",
+
+$ > grep -i layers inspect_9bb5e91b1730_container
+
