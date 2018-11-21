@@ -90,7 +90,7 @@ Build Cache         0                   0                   0B                  
 
 ```
 
-Kill ontainersi and delete images.
+Kill containers and delete images.
 ```
  $ > sudo  docker kill $(sudo docker ps -q)
 2b84b8ad80bf
@@ -98,6 +98,7 @@ e9b869ee49ca
 9bb5e91b1730
 $ > sudo  docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
 $ > sudo docker rm $(sudo docker ps -a -q)
 2b84b8ad80bf
 e9b869ee49ca
@@ -105,7 +106,8 @@ e9b869ee49ca
 9bb5e91b1730
 d0e96d2eca37
 b0bc40afc6ed
-└─ $ > sudo docker rmi $(sudo docker images -q)
+
+$ > sudo docker rmi $(sudo docker images -q)
 Untagged: tgz/ubuntu-tmp-file:latest
 Deleted: sha256:63e0c42e14e30939995c315d2bda50b05f8b2fb5fef6a260260bb489d5bf8cd3
 Deleted: sha256:3f087d611835b44af0d4c936759aa3809a552f675b12cbfd3b51bc118804d0d8
