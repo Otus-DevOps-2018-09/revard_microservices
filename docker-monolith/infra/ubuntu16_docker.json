@@ -1,0 +1,26 @@
+{
+    "builders": [
+        {
+            "type": "googlecompute",
+            "project_id": "{{user `my_project_id`}}",
+            "image_name": "docker-machine-{{timestamp}}",
+            "image_family": "docker-machine",
+            "source_image_family": "ubuntu-1604-lts",
+            "zone": "europe-west1-b",
+            "ssh_username": "appuser",
+            "machine_type": "{{user `my_machine_type`}}",
+            "image_description" : "Docker machine server",
+            "disk_size" : "10",
+            "tags" : "docker-machine",
+            "preemptible" : "true"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "script": "scripts/install_docker.sh",
+            "execute_command": "sudo {{.Path}}"
+        }
+    ]
+}
+
