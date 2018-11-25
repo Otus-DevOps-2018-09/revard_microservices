@@ -1,8 +1,8 @@
-resource "google_compute_instance" "docker-machine" {
+resource "google_compute_instance" "docker-host" {
   name         = "docker-host-${count.index}"
   machine_type = "g1-small"
   zone         = "${var.zone}"
-  tags         = ["docker-machine"]
+  tags         = ["docker-host"]
   count        = "${var.count}"
 
   boot_disk {

@@ -5,7 +5,10 @@ variables.json
 *.tfvars
 .terraform/
 *.retry
+#ansible publick roles
 jdauphant.nginx
+geerlingguy.docker
+geerlingguy.pip
 vault.key
 # Vagrant & molecule
 .vagrant/

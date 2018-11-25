@@ -9,7 +9,7 @@ variable zone {
 
 variable disk_image {
   description = "Disk image for reddit db"
-  default     = "docker-machine"
+  default     = "docker-host"
 }
 
 variable "private_key_path" {

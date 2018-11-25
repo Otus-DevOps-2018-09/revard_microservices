@@ -17,9 +17,9 @@
     ],
     "provisioners": [
         {
-            "type": "shell",
-            "script": "scripts/install_docker.sh",
-            "execute_command": "sudo {{.Path}}"
+            "type": "ansible",
+	        "ansible_env_vars": ["ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles"],
+            "playbook_file": "ansible/playbooks/packer-docker.yml" 
         }
     ]
 }

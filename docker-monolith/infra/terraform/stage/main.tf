@@ -6,8 +6,8 @@ provider "google" {
   region  = "${var.region}"
 }
 
-module "docker-machine" {
-  source           = "../modules/docker-machine"
+module "docker-host" {
+  source           = "../modules/docker-host"
   public_key_path  = "${var.public_key_path}"
   zone             = "${var.zone}"
   disk_image    = "${var.disk_image}"
