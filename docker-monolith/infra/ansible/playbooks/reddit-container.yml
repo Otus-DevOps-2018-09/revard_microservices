@@ -35,8 +35,3 @@
         - "9292:9292"
     tags: start-tag
 
-  - name: Delete container
-    docker_container:
-      name: "{{ container_name }}"
-      state: absent
-    tags: delete-tag

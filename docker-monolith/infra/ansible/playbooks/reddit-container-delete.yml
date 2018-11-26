@@ -1,0 +1,16 @@
+---
+- name: Run container 
+  hosts: tag_docker-host
+  become: yes
+  become_method: sudo
+
+  vars_files:
+    - ../vars.yml
+
+  tasks:
+  - name: Delete container
+    docker_container:
+      name: "{{ container_name }}"
+      state: absent
+    tags: delete-tag
+
