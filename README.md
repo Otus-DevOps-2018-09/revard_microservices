@@ -149,6 +149,60 @@ Status: Downloaded newer image for user_name/otus-reddit:1.0
 f8793580e2b7329fbbc3e78687663c7f3a165a1178412ef94bd4983a405837a0
 ```
 
+For automated deployment of infrastructure see tree bellow:
+```
+$ > tree infra/
+infra/
+├── ansible
+│   ├── ansible.cfg  - Main ansible config file
+│   ├── environments
+│   │   ├── prod
+│   │   │   └──... 
+│   │   └── stage
+│   │       ├── gce.ini  - GCP Settings
+│   │       ├── gce.py   - Inventory script 
+│   │       └──... 
+│   ├── playbooks
+│   │   ├── docker-server.yml  - Playbook to create docker host 
+│   │   ├── packer-docker.yml  - Playbook to create docker host for packer
+│   │   ├── reddit-container-delete.yml  - Playbook to delete container
+│   │   ├── reddit-container.yml  - Playbook to create  and deploy container
+│   │   └── site.yml
+│   ├── requirements.txt  - Requirements for ansible galaxy roles
+│   ├── requirements.yml
+│   ├── roles
+│   │   ├── geerlingguy.docker
+│   │   │   └── ...
+│   │   └── geerlingguy.pip
+│   │       └── ...
+│   ├── secrets.yml   - Crypted login info for dockerhub
+│   ├── templates
+│   └── vars.yml
+├── packer
+│   ├── scripts
+│   │   └── install_docker.sh
+│   ├── ubuntu16_docker-ansible.json  - Packer file with ansible palybook
+│   ├── ubuntu16_docker.json  - Packer file with clasic scrips
+│   ├── variables.json
+│   └── variables.json.example
+└── terraform
+    ├── modules
+    │   └── docker-host
+    │       ├── main.tf  - Main config file for module
+    │       ├── outputs.tf  - Output config to show IP
+    │       └── variables.tf
+    ├── prod
+    ├── stage
+    │   ├── main.tf  - Main config file uses module
+    │   ├── output.tf  - Output config to show IP
+    │   ├── terraform.tfstate
+    │   ├── terraform.tfvars
+    │   └── variables.tf
+    ├── storage-bucket.tf  - For gcp bucket
+    ├── terraform.tfvars
+    └── variables.tf
+```
+
 
 ## HW-12 Docker-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-1)
