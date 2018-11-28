@@ -1,7 +1,7 @@
 # Otus devops course [Microservices]
 
 ## HW-13 Docker-2
-![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-r2)
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-2)
 
 ### Docker machine
 
