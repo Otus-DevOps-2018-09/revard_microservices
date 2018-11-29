@@ -6,9 +6,8 @@ WORKDIR $APP_HOME
 ADD Gemfile* $APP_HOME/
 
 # Install ruby and ruby-bundler
-RUN apk add ruby-dev g++ make ruby-bundler
+RUN apk add --no-cache g++ make ruby-bundler && bundle install
 
-RUN bundle install
 ADD . $APP_HOME
 
 ENV POST_SERVICE_HOST post
