@@ -1,5 +1,73 @@
 # Otus devops course [Microservices]
 
+## HW-13 Docker-3
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-3)
+
+### Docker machine
+
+#### Manual deploy app
+
+```
+ $ > docker-machine create --google-project docker-223411 --driver google  --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b docker-host
+$ > eval $(docker-machine env docker-host)
+
+$ > docker-machine ls
+NAME          ACTIVE   DRIVER   STATE     URL                        SWARM   DOCKER     ERRORS
+docker-host   *        google   Running   tcp://35.233.xx.xx:2376           v18.09.0
+
+$ > docker build -t dockerhub_user/post:1.0 ./post-py
+$ > docker build -t dockerhub_user/comment:1.0 ./comment
+$ > docker build -t dockerhub_user/ui:1.0 ./ui
+
+$ > docker network create reddit
+
+$ > docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+$ > docker run -d --network=reddit --network-alias=post revard/post:1.0
+$ > docker run -d --network=reddit --network-alias=comment revard/comment:1.0
+$ > docker run -d --network=reddit -p 9292:9292 revard/ui:1.0
+
+$ > docker ps -a
+CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
+3807b8e8be5e        revard/ui:1.0        "puma"                   40 minutes ago      Up 40 minutes       0.0.0.0:9292->9292/tcp   agitated_lehmann
+351276696b34        revard/comment:1.0   "puma"                   41 minutes ago      Up 41 minutes                                boring_albattani
+3777289a5c5b        revard/post:1.0      "python3 post_app.py"    43 minutes ago      Up 12 minutes                                adoring_tesla
+0be9429ba655        mongo:latest         "docker-entrypoint.s…"   About an hour ago   Up 12 minutes       27017/tcp                silly_euclid
+
+```
+
+Try run with different network aliases
+
+```
+$ > docker run -d --network=reddit --network-alias=post_db1 --network-alias=comment_db1 mongo:latest
+09a2be6955d534cfb9431b82ffc554a26c75aab0e213692b79ef50acc82f35c7
+$ > docker run -d --network=reddit -e "POST_DATABASE_HOST=post_db1" --network-alias=post1 revard/post:1.0
+f04e331b2086ee6fd850713a99668299601406a8dc406f53e49c75d66ace83cf
+$ >  docker run -d --network=reddit -e "COMMENT_DATABASE_HOST=comment_db1" --network-alias=comment1 revard/comment:1.0
+8b0236fb666ce7fc9dde66e196c4aff0fd42d0c7dc18a6e3942c65c20b79af96
+$ > docker run -d --network=reddit -e "POST_SERVICE_HOST=post1" -e "COMMENT_SERVICE_HOST=comment1" -p 9292:9292 revard/ui:1.0
+2b44c52a39549b0bb03264f6dadc004e26c62df4ec1c2df1842da11cf809d0af
+ $ > docker ps -a
+CONTAINER ID        IMAGE                COMMAND                  CREATED              STATUS                        PORTS                    NAMES
+2b44c52a3954        revard/ui:1.0        "puma"                   About a minute ago   Up About a minute             0.0.0.0:9292->9292/tcp   kind_tharp
+8b0236fb666c        revard/comment:1.0   "puma"                   2 minutes ago        Up 2 minutes                                           amazing_shtern
+f04e331b2086        revard/post:1.0      "python3 post_app.py"    2 minutes ago        Up 2 minutes                                           wizardly_meninsky
+09a2be6955d5        mongo:latest         "docker-entrypoint.s…"   4 minutes ago        Up 4 minutes                  27017/tcp                eager_bell
+3807b8e8be5e        revard/ui:1.0        "puma"                   About an hour ago    Exited (137) 32 minutes ago                            agitated_lehmann
+351276696b34        revard/comment:1.0   "puma"                   About an hour ago    Exited (137) 32 minutes ago                            boring_albattani
+3777289a5c5b        revard/post:1.0      "python3 post_app.py"    About an hour ago    Exited (137) 32 minutes ago                            adoring_tesla
+0be9429ba655        mongo:latest         "docker-entrypoint.s…"   2 hours ago          Exited (137) 27 minutes ago                            silly_euclid
+```
+
+#### Docker volume
+
+```
+$ > docker volume create reddit_db
+reddit_db
+
+$ > docker run -d --network=reddit --network-alias=post_db \
+--network-alias=comment_db -v reddit_db:/data/db mongo:latest
+```
+
 ## HW-13 Docker-2
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-2)
 
