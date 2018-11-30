@@ -6,7 +6,7 @@ WORKDIR $APP_HOME
 ADD Gemfile* $APP_HOME/
 
 # Install ruby and ruby-bundler
-RUN apk add --no-cache g++ make ruby-bundler && bundle install
+RUN apk --no-cache add g++ make ruby-bundler && bundle install
 
 ADD . $APP_HOME
 
