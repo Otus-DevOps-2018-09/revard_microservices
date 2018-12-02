@@ -38,7 +38,7 @@ networks:
       driver: default
       config:
       -
-        subnet: 10.0.1.0/24 
+        subnet: 10.0.1.0/24
   back_net:
     driver: bridge
     ipam:
