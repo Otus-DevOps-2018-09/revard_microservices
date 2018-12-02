@@ -1,6 +1,206 @@
 # Otus devops course [Microservices]
 
-## HW-13 Docker-3
+## HW-15 Docker-4
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-4)
+
+### Play Docker networks
+
+#### None network driver
+
+Run `docker run -ti --rm --network none joffotron/docker-net-tools -c ifconfig`
+
+#### Host network driver
+
+Run `docker run -ti --rm --network host joffotron/docker-net-tools -c ifconfig`
+
+#### Docker networks
+
+Run 
+```
+sudo ln -s /var/run/docker/netns /var/run/netns 
+sudo ip netns
+```
+
+#### Bridge network driver
+
+Be careful this changes IPTABLES!
+
+One net
+```
+docker network create reddit --driver bridge
+docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+docker run -d --network=reddit --network-alias=post <your-dockerhub-login>/post:1.0
+docker run -d --network=reddit --network-alias=comment  <your-dockerhub-login>/comment:1.0
+docker run -d --network=reddit -p 9292:9292 <your-dockerhub-login>/ui:1.0
+```
+Two nets
+```
+> docker network create back_net --subnet=10.0.2.0/24
+> docker network create front_net --subnet=10.0.1.0/24
+
+> docker run -d --network=front_net -p 9292:9292 --name ui <your-login>/ui:1.0
+> docker run -d --network=back_net --name comment <your-login>/comment:1.0
+> docker run -d --network=back_net --name post <your-login>/post:1.0
+> docker run -d --network=back_net --name mongo_db \
+ --network-alias=post_db --network-alias=comment_db mongo:latest 
+
+> docker network connect front_net post
+> docker network connect front_net comment 
+
+> sudo iptables -nL -t nat
+
+> ifconfig | grep br 
+
+> brctl show <interface>
+ bridge           name bridge id     STP enabled  interfaces
+ br-4ac81d1bf266 8000.0242ae9beade    no          vethaf41855
+                                                  vethe115d8d 
+
+> ps ax | grep docker-proxy
+```
+
+### Docker compose
+
+#### Install and setup
+
+Install https://docs.docker.com/compose/install/#install-compose
+
+Set your login `export USERNAME=<your-login>`
+
+Set prefix of compose resources names `export COMPOSE_PROJECT_NAME=revard`
+
+Main file `docker-compose.yml` 
+
+```
+version: '3.3'
+services:
+  post_db:
+    image: mongo:3.2
+    volumes:
+      - post_db:/data/db
+    networks:
+      back_net:
+        aliases:
+         - comment_db
+  ui:
+    build: ./ui
+    image: ${USERNAME}/ui:${UI-VERSION}
+    ports:
+      - ${PORT}:${PORT}/tcp
+    networks:
+      - front_net
+  post:
+    build: ./post-py
+    image: ${USERNAME}/post:${POST-VERSION}
+    networks:
+      - back_net
+      - front_net
+  comment:
+    build: ./comment
+    image: ${USERNAME}/comment:${COMMENT-VERSION}
+    networks:
+      - back_net
+      - front_net
+
+volumes:
+  post_db:
+
+networks:
+  front_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      -
+        subnet: 10.0.1.0/24 
+  back_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      -
+        subnet: 10.0.2.0/24
+```
+
+File for override config `docker-compose.override.yml`
+```
+version: '3.3'
+services:
+  ui:
+    volumes:
+      - ./ui:/app
+    command: "puma --debug -w 2"
+  comment:
+    volumes:
+      - ./comment:/app
+    command: "puma --debug -w 2"
+  post:
+    volumes:
+      - ./post-py:/app
+```
+
+File with variables `.env`
+```
+USERNAME=user_name
+PORT=9292
+${UI-VERSION}=1.0
+${POST-VERSION}=1.0
+${COMMENT-VERSION}=1.0
+${MONGO-VERSION}=3.2
+```
+
+#### Administration
+
+Run or rebuid
+```
+$>  docker-compose up -d
+revard_post_db_1_4a8d1cd179ec is up-to-date
+revard_ui_1_12a17147876b is up-to-date
+revard_post_1_4089dcc7897c is up-to-date
+Starting revard_comment_1_38c8ec61e032 ... done
+```
+Status
+```
+$>  docker-compose ps
+            Name                          Command             State            Ports
+---------------------------------------------------------------------------------------------
+revard_comment_1_38c8ec61e032   puma --debug -w 2             Exit 1
+revard_post_1_4089dcc7897c      python3 post_app.py           Up
+revard_post_db_1_4a8d1cd179ec   docker-entrypoint.sh mongod   Up       27017/tcp
+revard_ui_1_12a17147876b        puma --debug -w 2             Up       0.0.0.0:9292->9292/tcp
+```
+
+Build single image 
+```
+$> docker-compose build ui
+Building ui
+Step 1/12 : FROM ruby:2.4-alpine3.8
+ ---> bbbc1f86302c
+...
+ ---> Using cache
+ ---> 7f177613dc1e
+
+Successfully built 7f177613dc1e
+Successfully tagged revard/ui:VERSION
+```
+
+Kill
+```
+$> docker-compose kill
+Killing revard_ui_1_12a17147876b      ... done
+Killing revard_post_1_4089dcc7897c    ... done
+Killing revard_post_db_1_4a8d1cd179ec ... done
+```
+### Remake application for testing purpose
+
+For remake application without rebuild container image we use volumes in docker-compose.override.yml 
+
+Before run `docker-compose up -d` we need to write changes in source files.
+
+In case of using docker-machine do nex steps. Copy this files to docker-host machine by `docker-machine scp -r . docker-host:` In docker-host don't forget to copy src from `/home/docker-user/` to your user home directory with project path, for example - `/home/your_user/user_microservices/src`.
+
+
+## HW-14 Docker-3
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-3)
 
 ### Docker machine
