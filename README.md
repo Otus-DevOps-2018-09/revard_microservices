@@ -143,10 +143,10 @@ File with variables `.env`
 ```
 USERNAME=user_name
 PORT=9292
-${UI-VERSION}=1.0
-${POST-VERSION}=1.0
-${COMMENT-VERSION}=1.0
-${MONGO-VERSION}=3.2
+UI-VERSION=1.0
+POST-VERSION=1.0
+COMMENT-VERSION=1.0
+MONGO-VERSION=3.2
 ```
 
 #### Administration
