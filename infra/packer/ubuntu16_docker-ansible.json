@@ -1,0 +1,27 @@
+{
+    "builders": [
+        {
+            "type": "googlecompute",
+            "project_id": "{{user `my_project_id`}}",
+            "image_name": "docker-host-{{timestamp}}",
+            "image_family": "docker-host",
+            "source_image_family": "ubuntu-1604-lts",
+            "zone": "europe-west1-b",
+            "ssh_username": "appuser",
+            "machine_type": "{{user `my_machine_type`}}",
+            "image_description" : "Docker machine server",
+            "disk_size" : "10",
+            "tags" : "docker-host",
+            "preemptible" : "true"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "ansible",
+	    "extra_arguments": ["--tags","deploy-tag"],
+	    "ansible_env_vars": ["ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles"],
+            "playbook_file": "ansible/playbooks/packer-docker.yml" 
+        }
+    ]
+}
+
