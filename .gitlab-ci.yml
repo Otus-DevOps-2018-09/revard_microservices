@@ -1,8 +1,3 @@
-job:
-  tags:
-    - linux
-    - ubuntu
-
 stages:
   - build
   - test
@@ -10,21 +5,29 @@ stages:
 
 build_job:
   stage: build
+  tags:
+    - linux
   script:
     - echo 'Building'
 
 test_unit_job:
   stage: test
+  tags:
+    - linux
   script:
     - echo 'Testing 1'
 
 test_integration_job:
   stage: test
+  tags:
+    - linux
   script:
     - echo 'Testing 2'
 
 deploy_job:
   stage: deploy
+  tags:
+    - linux
   script:
     - echo 'Deploy'
 
