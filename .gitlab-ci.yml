@@ -41,4 +41,3 @@ deploy_job:
     - linux
   script:
     - echo 'Deploy'
-
