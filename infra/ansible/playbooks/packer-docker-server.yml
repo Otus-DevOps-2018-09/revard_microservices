@@ -1,0 +1,13 @@
+---
+- name: Install docker 
+  hosts: all
+  become: true
+ 
+  vars:
+    pip_install_packages:
+      - name: docker
+      - name: docker-compose
+
+  roles:
+    - geerlingguy.pip
+    - geerlingguy.docker
