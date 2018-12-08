@@ -8,6 +8,7 @@ variables:
  DATABASE_URL: 'mongodb://mongo/user_posts'
 
 before_script:
+ - apk --no-cache add g++ make ruby-bundler
  - cd reddit 
  - bundle install
 
