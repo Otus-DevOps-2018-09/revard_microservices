@@ -27,6 +27,12 @@ Wait a few minutes and check http://<your-vm-ip>
 
 You need to register then. Feel free to create new groups and projects.
 
+For adding new gitlab remote to your project:
+```
+> git remote add gitlab http://<your-gitlab>/<you_group>/<your_project_name>.git
+> git push gitlab <you_branch>
+```
+
 ### Runner
 
 #### Manual 
