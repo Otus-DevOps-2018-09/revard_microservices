@@ -15,15 +15,19 @@ https://docs.gitlab.com/omnibus/README.html
 
 https://docs.gitlab.com/omnibus/docker/README.html
 
-#### Prepare infrasturcture
+#### Prepare infrastructure
 
 In directory `/infra` you need to use terraform and ansible to prepare gitlab-ci host. Image created by packer.
 
-Terraform `terraform applly/destroy`
+Terraform 
+```terraform applly/destroy```
 
-Ansible `ansible-playbook playbooks/gitlab-ci.yml` We use docker-compose to run gitlab in docker container by /srv/gitlab/docker-compose.yml
+Ansible 
+```ansible-playbook playbooks/gitlab-ci.yml```
 
-Wait a few minutes and check http://<your-vm-ip>
+We use docker-compose to run gitlab in docker container by /srv/gitlab/docker-compose.yml
+
+Wait a few minutes and check `http://<your-vm-ip>`
 
 You need to register then. Feel free to create new groups and projects.
 
@@ -71,8 +75,9 @@ Runner registered successfully.
 
 For half-manual registration of docker runner:
 ```
-appuser@gitlab-runner:~$ sudo gitlab-runner register --name my-runner --url http://<gitlab_IP>/ --registration-token <gitlab_tocken> /
- --executor=docker --docker-image=ruby-2.4 -tag-list=linux --non-interactive
+appuser@gitlab-runner:~$ sudo gitlab-runner register --name my-runner --url http://<gitlab_IP>/ /
+--registration-token <gitlab_tocken>  --executor=docker --docker-image=ruby-2.4 /
+--tag-list=linux --non-interactive
 Runtime platform                                    arch=amd64 os=linux pid=16733 revision=7f00c780 version=11.5.1
 Running in system-mode.                            
                                                    
@@ -82,10 +87,15 @@ Runner registered successfully. Feel free to start it, but if it's running alrea
 
 #### Almost auto :)
 
-Create gce runner and autoregister by ansible. In this scenario we use external role solval.gitlab_runner, so you need install it first.
+Create gce runner and autoregister by ansible. 
+
+In this scenario we use external role solval.gitlab_runner, so you need install it first.
 For proper config edit gitlab-runner.yml in ansible/host_vars dir, write you gitlab IP and token. You can pun more than one runner in config.  
 
-Create gce instance `gcloud compute instances create gitlab-runner --tags=docker-server  --image-family docker-host` For automation this you can write new conf in terraform.
+Create gce instance 
+```gcloud compute instances create gitlab-runner --tags=docker-server  --image-family docker-host```
+
+For automation this you can write new conf in terraform.
 
 Run playbook `ansible-playbook playbooks/gitlab-runner.yml` 
 
