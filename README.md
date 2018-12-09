@@ -113,6 +113,8 @@ Manual https://docs.gitlab.com/ee/user/project/integrations/slack.html
 
 Setup in gitlab website Project Settings > Integrations > Slack notifications
 
+Looks like here in my ![slack chanel](https://devops-team-otus.slack.com/messages/CD9T2PKLZ/details/)
+
 
 ## HW-15 Docker-4
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-4)
