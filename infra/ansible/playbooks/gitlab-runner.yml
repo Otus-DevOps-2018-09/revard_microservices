@@ -1,6 +1,6 @@
 ---
 - name: Install gitlab-runner 
-  hosts: gitlab-runner*
+  hosts: tag_gitlab-runner
   become: true
   
   roles:

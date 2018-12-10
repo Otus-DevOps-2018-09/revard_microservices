@@ -39,7 +39,7 @@ For adding new gitlab remote to your project:
 
 ### Runner
 
-#### Manual 
+#### Manual setup
 
 Runner in container and manual registration:  
 ```
@@ -71,12 +71,12 @@ alpine:latest
 Runner registered successfully.
 ```
 
-#### Half-manual
+#### Half-manual setup
 
 For half-manual registration of docker runner:
 ```
 appuser@gitlab-runner:~$ sudo gitlab-runner register --name my-runner --url http://<gitlab_IP>/ /
---registration-token <gitlab_tocken>  --executor=docker --docker-image=ruby-2.4 /
+--registration-token <gitlab_token>  --executor=docker --docker-image=ruby-2.4 /
 --tag-list=linux --non-interactive
 Runtime platform                                    arch=amd64 os=linux pid=16733 revision=7f00c780 version=11.5.1
 Running in system-mode.                            
@@ -85,21 +85,28 @@ Registering runner... succeeded                     runner=A4NCtKZ5
 Runner registered successfully. Feel free to start it, but if it's running already the config should be automatically reloaded! 
 ```
 
-#### Almost auto :)
+#### Auto setup
 
-Create gce runner and autoregister by ansible. 
+Create gce based runner and autoregister by ansible in your gitlab-ce instance. 
 
 In this scenario we use external role solval.gitlab_runner, so you need install it first.
-For proper config edit gitlab-runner.yml in ansible/host_vars dir, write you gitlab IP and token. You can pun more than one runner in config.  
+For proper config edit tag_gitlab-runner.yml in ansible/group_vars dir, write you gitlab token. You can pun more than one runner in config.  
 
-Create gce instance 
-```gcloud compute instances create gitlab-runner --tags=docker-server  --image-family docker-host```
+Create gce instances (using tags for define runner)
+```
+gcloud compute instances create gitlab-runner --tags=gitlab-runner  --image-family docker-host
+```
 
 For automation this you can write new conf in terraform.
 
-Run playbook `ansible-playbook playbooks/gitlab-runner.yml` 
+For final runner  registration run playbook 
+```
+ansible-playbook playbooks/gitlab-runner.yml
+```
 
-After you will have new runner in gitlab-ce. 
+If you got some repo errors it reccomended to wait a few minutes for gitlab-runner instances get ready.
+
+And finaly you will have new runner in gitlab-ce.
 
 ### Runners autoscale configuration
 
@@ -113,7 +120,7 @@ Manual https://docs.gitlab.com/ee/user/project/integrations/slack.html
 
 Setup in gitlab website Project Settings > Integrations > Slack notifications
 
-Looks like here in my [slack chanel](https://devops-team-otus.slack.com/messages/CD9T2PKLZ/details/)
+It looks like here for example - my [slack chanel.](https://devops-team-otus.slack.com/messages/CD9T2PKLZ/details/)
 
 
 ## HW-15 Docker-4

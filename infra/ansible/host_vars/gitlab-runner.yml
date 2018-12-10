@@ -1,8 +1,0 @@
----
-gitlab_runner_list:
-  - description: Runner 1 example
-    url: http://you_gitlab_IP/
-    executor: docker
-    docker-image: ruby-2.4
-    registration-token: you_gitlabb_token
-    tag-list: linux
