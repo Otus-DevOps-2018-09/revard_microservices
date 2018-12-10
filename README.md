@@ -19,11 +19,15 @@ https://docs.gitlab.com/omnibus/docker/README.html
 
 In directory `/infra` you need to use terraform and ansible to prepare gitlab-ci host. Image created by packer.
 
-Terraform 
-```terraform applly/destroy```
+Terraform: 
+```
+terraform applly/destroy
+```
 
-Ansible 
-```ansible-playbook playbooks/gitlab-ci.yml```
+Ansible: 
+```
+ansible-playbook playbooks/gitlab-ci.yml
+```
 
 We use docker-compose to run gitlab in docker container by /srv/gitlab/docker-compose.yml
 
@@ -41,7 +45,8 @@ For adding new gitlab remote to your project:
 
 In case if IP of gitlab changes and jobs failes trying clone repository from old IP you need to setup new config:
 ```
-root@gitlab:/# vi /etc/gitlab/  EDIT external_url 'http://<your_new_gitlab_IP>'
+root@gitlab:/# vi /etc/gitlab/gitlab.rb 
+EDIT --->  external_url 'http://<your_new_gitlab_IP>'
 root@gitlab:/# gitlab-ctl reconfigure
 root@gitlab:/# gitlab-ctl restart
 ```
