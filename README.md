@@ -37,6 +37,15 @@ For adding new gitlab remote to your project:
 > git push gitlab <you_branch>
 ```
 
+#### Troubleshooting
+
+In case if IP of gitlab changes and jobs failes trying clone repository from old IP you need to setup new config:
+```
+root@gitlab:/# vi /etc/gitlab/  EDIT external_url 'http://<your_new_gitlab_IP>'
+root@gitlab:/# gitlab-ctl reconfigure
+root@gitlab:/# gitlab-ctl restart
+```
+
 ### Runner
 
 #### Manual setup
@@ -92,14 +101,14 @@ Create gce based runner and autoregister by ansible in your gitlab-ce instance.
 In this scenario we use external role solval.gitlab_runner, so you need install it first.
 For proper config edit tag_gitlab-runner.yml in ansible/group_vars dir, write you gitlab token. You can pun more than one runner in config.  
 
-Create gce instances (using tags for define runner)
+Create gce instances (using tags for define runner):
 ```
 gcloud compute instances create gitlab-runner --tags=gitlab-runner  --image-family docker-host
 ```
 
 For automation this you can write new conf in terraform.
 
-For final runner  registration run playbook 
+For final runner  registration run playbook: 
 ```
 ansible-playbook playbooks/gitlab-runner.yml
 ```
