@@ -40,6 +40,6 @@ deploy_dev_job:
     - linux
   script:
     - echo 'Deploy'
-  enviroment:
+  environment:
     name: dev
-    url http://dev.example.com
+    url: http://dev.example.com
