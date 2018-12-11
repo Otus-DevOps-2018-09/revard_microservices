@@ -55,7 +55,7 @@ staging:
   script:
     - echo 'Deploy'
   environment:
-    name: dev
+    name: stage
     url: http://beta.example.com 
 
 production:
@@ -66,5 +66,5 @@ production:
   script:
     - echo 'Deploy'
   environment:
-    name: dev
+    name: production
     url: http://example.com
