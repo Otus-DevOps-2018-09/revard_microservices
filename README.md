@@ -1,5 +1,209 @@
 # Otus devops course [Microservices]
 
+## HW-13 Docker-2
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-2)
+
+### Docker machine
+
+#### Install
+
+For Linux https://docs.docker.com/machine/install-machine/
+
+Don`t forget to setup gcloud for docker machine authentication in cloud.
+```
+$ gcloud init
+You must log in to continue. Would you like to log in (Y/n)? Y
+Your browser has been opened to visit:
+ https://accounts.google.com/o/oauth2/.... 
+
+$ gcloud auth application-default login
+Your browser has been opened to visit:
+ https://accounts.google.com/o/oauth2/....
+```
+
+#### Create machine
+
+```
+~$ docker-machine create --driver google  --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b docker-host
+...
+Docker is up and running!
+To see how to connect your Docker Client to the Docker Engine running on this virtual machine, run: docker-machine env docker-host
+```
+
+#### Admin machines
+
+Status
+```
+~$ docker-machine ls
+NAME          ACTIVE   DRIVER   STATE     URL                         SWARM   DOCKER     ERRORS
+docker-host   -        google   Running   tcp://35.241.210.113:2376           v18.09.0
+```
+
+Setup for using concrete machine run `$ eval $(docker-machine env docker-host)`
+
+Run container
+```
+~$ docker run --rm --pid host -ti tehbilly/htop
+~$ docker-machine ls
+NAME          ACTIVE   DRIVER   STATE     URL                         SWARM   DOCKER     ERRORS
+docker-host   *        google   Running   tcp://35.241.210.113:2376           v18.09.0
+```
+
+Build image
+```
+~/_microservices/docker-monolith$ docker build -t reddit:latest .
+Sending build context to Docker daemon  8.704kB
+Step 1/11 : FROM ubuntu:16.04
+16.04: Pulling from library/ubuntu
+...
+Successfully built 3ed743eef79f
+Successfully tagged reddit:latest
+```
+
+See image
+```
+~/_microservices/docker-monolith$ docker images -a
+REPOSITORY          TAG                 IMAGE ID            CREATED              SIZE
+reddit              latest              3ed743eef79f        33 seconds ago       676MB
+<none>              <none>              4f35292dbc9e        33 seconds ago       676MB
+<none>              <none>              46ca2ffb1197        35 seconds ago       676MB
+<none>              <none>              5cd5b36530c4        49 seconds ago       638MB
+<none>              <none>              214b37c20102        49 seconds ago       638MB
+<none>              <none>              528295031f56        49 seconds ago       638MB
+<none>              <none>              1e806f4d7d3a        49 seconds ago       638MB
+<none>              <none>              dc42c631b5c2        51 seconds ago       637MB
+<none>              <none>              dfd9cf4c3eda        About a minute ago   634MB
+<none>              <none>              7199470322d5        About a minute ago   141MB
+ubuntu              16.04               a51debf7e1eb        3 days ago           116MB
+hello-world         latest              4ab4c602aa5e        2 months ago         1.84kB
+tehbilly/htop       latest              4acd2b4de755        7 months ago         6.91MB
+```
+
+Run container
+```
+~/_microservices/docker-monolith$  docker run --name reddit -d --network=host reddit:latest
+38284a02d8a381e9b4649ecb51c162b7111d9709872743a299b91f898cf719a6
+appuser@otus-hw:~/revard_microservices/docker-monolith$ docker-machine ls
+NAME          ACTIVE   DRIVER   STATE     URL                         SWARM   DOCKER     ERRORS
+docker-host   *        google   Running   tcp://35.241.210.113:2376           v18.09.0
+```
+
+### Docker hub
+
+Register account on https://hub.docker.com/
+
+Login
+```
+$ docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: revard
+Password:
+WARNING! Your password will be stored unencrypted in /home/appuser/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+```
+Push image on docker hub
+```
+~/_microservices/docker-monolith$ docker tag reddit:latest user_name/otus-reddit:1.0
+~/_microservices/docker-monolith$ docker push user_name/otus-reddit:1.0
+The push refers to repository [docker.io/user_name/otus-reddit]
+508e32e2dae9: Pushed
+388aaa0ac164: Pushed
+b35eb69f9227: Pushed
+ca70d14be66b: Pushed
+af3fbf0d7123: Pushed
+6163aebf7183: Pushed
+a1395fab23f7: Pushed
+a7aefc6d8f2c: Pushed
+1cc2b87eac1f: Pushed
+3db5746c911a: Mounted from library/ubuntu
+819a824caf70: Mounted from library/ubuntu
+647265b9d8bc: Mounted from library/ubuntu
+41c002c8a6fd: Mounted from library/ubuntu
+1.0: digest: sha256:e2c876391a933d56ba60fc23d7afce82d4497bd84a2bc59859b1034bd2772d6f size: 3034
+~/_microservices/docker-monolith$
+```
+
+Try run image
+```
+$ > sudo  docker run --name reddit -d -p 9292:9292 user_name/otus-reddit:1.0
+Unable to find image 'user_name/otus-reddit:1.0' locally
+1.0: Pulling from user_name/otus-reddit
+7b8b6451c85f: Pull complete
+ab4d1096d9ba: Pull complete
+e6797d1788ac: Pull complete
+e25c5c290bde: Pull complete
+d479fd78a586: Pull complete
+4121177ab275: Pull complete
+e7eeac0b7904: Pull complete
+e0707aa30dad: Pull complete
+f75dd46b807b: Pull complete
+7c0533537df5: Pull complete
+b648933eee5d: Pull complete
+229df837abd4: Pull complete
+a7ad62556449: Pull complete
+Digest: sha256:e2c876391a933d56ba60fc23d7afce82d4497bd84a2bc59859b1034bd2772d6f
+Status: Downloaded newer image for user_name/otus-reddit:1.0
+f8793580e2b7329fbbc3e78687663c7f3a165a1178412ef94bd4983a405837a0
+```
+
+For automated deployment of infrastructure see tree bellow:
+```
+$ > tree infra/
+infra/
+├── ansible
+│   ├── ansible.cfg  - Main ansible config file
+│   ├── environments
+│   │   ├── prod
+│   │   │   └──... 
+│   │   └── stage
+│   │       ├── gce.ini  - GCP Settings
+│   │       ├── gce.py   - Inventory script 
+│   │       └──... 
+│   ├── playbooks
+│   │   ├── docker-server.yml  - Playbook to create docker host 
+│   │   ├── packer-docker.yml  - Playbook to create docker host for packer
+│   │   ├── reddit-container-delete.yml  - Playbook to delete container
+│   │   ├── reddit-container.yml  - Playbook to create  and deploy container
+│   │   └── site.yml
+│   ├── requirements.txt  - Requirements for ansible galaxy roles
+│   ├── requirements.yml
+│   ├── roles
+│   │   ├── geerlingguy.docker
+│   │   │   └── ...
+│   │   └── geerlingguy.pip
+│   │       └── ...
+│   ├── secrets.yml   - Crypted login info for dockerhub
+│   ├── templates
+│   └── vars.yml
+├── packer
+│   ├── scripts
+│   │   └── install_docker.sh
+│   ├── ubuntu16_docker-ansible.json  - Packer file with ansible palybook
+│   ├── ubuntu16_docker.json  - Packer file with clasic scrips
+│   ├── variables.json
+│   └── variables.json.example
+└── terraform
+    ├── modules
+    │   └── docker-host
+    │       ├── main.tf  - Main config file for module
+    │       ├── outputs.tf  - Output config to show IP
+    │       └── variables.tf
+    ├── prod
+    ├── stage
+    │   ├── main.tf  - Main config file uses module
+    │   ├── output.tf  - Output config to show IP
+    │   ├── terraform.tfstate
+    │   ├── terraform.tfvars
+    │   └── variables.tf
+    ├── storage-bucket.tf  - For gcp bucket
+    ├── terraform.tfvars
+    └── variables.tf
+```
+
+
 ## HW-12 Docker-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=docker-1)
 
