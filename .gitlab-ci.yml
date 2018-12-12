@@ -14,6 +14,12 @@ before_script:
  - cd reddit
  - bundle install
 
+.bundle_gcp_vm: &bundle_gcp_vm |
+ echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
+ gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+ gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-env-server  --image-family docker-host --preemptible --zone europe-west1-b
+ echo "New VM - gitlab-gcp-vm-$CI_PIPELINE_ID created"
+
 build_job:
   stage: build
   tags:
@@ -49,7 +55,9 @@ deploy_dev_job:
 
 branch review:
  stage: review
- script: echo "Deploy to $CI_ENVIRONMENT_SLUG"
+ script:
+   - echo "Deploy to $CI_ENVIRONMENT_SLUG"
+   - *bundle_gcp_vm
  environment:
    name: branch/$CI_COMMIT_REF_NAME
    url: http://$CI_ENVIRONMENT_SLUG.example.com
