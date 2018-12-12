@@ -11,7 +11,8 @@ variables:
  DATABASE_URL: 'mongodb://mongo/user_posts'
 
 before_script:
- - echo "Before script"
+ - cd reddit
+ - bundle install
 
 .bundle_gcp_vm: &bundle_gcp_vm |
  echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
