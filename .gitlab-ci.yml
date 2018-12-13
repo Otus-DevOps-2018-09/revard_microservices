@@ -11,7 +11,11 @@ stages:
 variables:
  DATABASE_URL: 'mongodb://mongo/user_posts'
 
+services:
+  - docker:dind
+
 before_script:
+ - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
  - cd reddit
  - bundle install
 
@@ -25,7 +29,7 @@ before_script:
  echo "Gcloud installed"
 
 .create_gcp_vm: &create_gcp_vm |
- gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-env-server  --image-family docker-host --preemptible --zone europe-west1-b
+ gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-deploy-server,http-server,https-server  --image-family docker-host --preemptible --zone europe-west1-b
  echo "New VM - gitlab-gcp-vm-$CI_PIPELINE_ID created"
 
 .delete_gcp_vm: &delete_gcp_vm |
@@ -37,6 +41,8 @@ build_job:
   tags:
     - linux
   script:
+    - docker build --pull -t "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     - echo 'Building'
 
 test_unit_job:
@@ -101,7 +107,7 @@ production:
     url: http://example.com
 
 delete vm:
- stage:  theend
+ stage: theend
  when: manual
  script:
    - *install_gcloud
