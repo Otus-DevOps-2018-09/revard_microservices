@@ -12,17 +12,25 @@ variables:
 
 before_script:
 
-.create_gcp_vm: &bundle_gcp_vm |
+.create_gcp_vm: &create_gcp_vm |
  export CLOUD_SDK_REPO="cloud-sdk-xenial"
  echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
  apt-get update && apt-get -y install google-cloud-sdk
- echo "Deploy to $CI_ENVIRONMENT_SLUG"
  echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
  gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
  gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-env-server  --image-family docker-host --preemptible --zone europe-west1-b
  echo "New VM - gitlab-gcp-vm-$CI_PIPELINE_ID created"
 
+.delete_gcp_vm: &delete_gcp_vm |
+ export CLOUD_SDK_REPO="cloud-sdk-xenial"
+ echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+ apt-get update && apt-get -y install google-cloud-sdk
+ echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
+ gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+ gcloud compute instances delete gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID 
+ echo "Delete VM - gitlab-gcp-vm-$CI_PIPELINE_ID"
 
 branch review:
  stage: review
