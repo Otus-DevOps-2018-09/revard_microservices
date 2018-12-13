@@ -1,4 +1,4 @@
-image: docker:latest
+image: ruby:2.4.2
 
 stages:
   - build
@@ -11,13 +11,20 @@ stages:
 variables:
  DATABASE_URL: 'mongodb://mongo/user_posts'
 
-services:
-  - docker:dind
+
+.install_docker: &install_docker |
+ export DOCKER_REPO="jessie"
+ apt-get update
+ apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+ curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $DOCKER_REPO stable"
+ apt-get update && apt-get -y install docker-ce
+
 
 before_script:
- - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
  - cd reddit
  - bundle install
+
 
 .install_gcloud: &install_gcloud |
  export CLOUD_SDK_REPO="cloud-sdk-xenial"
@@ -41,6 +48,8 @@ build_job:
   tags:
     - linux
   script:
+    - *install_docker
+    - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
     - docker build --pull -t "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     - echo 'Building'
