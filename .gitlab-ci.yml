@@ -9,32 +9,66 @@ stages:
   - theend
 
 variables:
+ DATABASE_URL: 'mongodb://mongo/user_posts'
 
 before_script:
+ - cd reddit
+ - bundle install
 
-.create_gcp_vm: &create_gcp_vm |
+.install_gcloud: &install_gcloud |
  export CLOUD_SDK_REPO="cloud-sdk-xenial"
  echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
  apt-get update && apt-get -y install google-cloud-sdk
  echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
  gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+ echo "Gcloud installed"
+
+.create_gcp_vm: &create_gcp_vm |
  gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-env-server  --image-family docker-host --preemptible --zone europe-west1-b
  echo "New VM - gitlab-gcp-vm-$CI_PIPELINE_ID created"
 
 .delete_gcp_vm: &delete_gcp_vm |
- export CLOUD_SDK_REPO="cloud-sdk-xenial"
- echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
- curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
- apt-get update && apt-get -y install google-cloud-sdk
- echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
- gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
  gcloud compute instances delete gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --zone=europe-west1-b  --quiet
  echo "Delete VM - gitlab-gcp-vm-$CI_PIPELINE_ID"
+
+build_job:
+  stage: build
+  tags:
+    - linux
+  script:
+    - echo 'Building'
+
+test_unit_job:
+  stage: test
+  tags:
+    - linux
+  services:
+    - mongo:latest
+  script:
+    - ruby simpletest.rb
+
+test_integration_job:
+  stage: test
+  tags:
+    - linux
+  script:
+    - echo 'Testing 2'
+
+deploy_dev_job:
+  stage: review
+  tags:
+    - linux
+  script:
+    - echo 'Deploy'
+  environment:
+    name: dev
+    url: http://dev.example.com
 
 branch review:
  stage: review
  script:
+   - *install_gcloud
    - *create_gcp_vm
  environment:
    name: branch/$CI_COMMIT_REF_NAME
@@ -44,10 +78,33 @@ branch review:
  except:
    - master
 
-branch delete vm:
+staging:
+  stage: stage
+  when: manual
+  only:
+    - /^\d+\.\d+\.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: stage
+    url: http://beta.example.com
+
+production:
+  stage: production
+  when: manual
+  only:
+    - /^\d+\.\d+\.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: production
+    url: http://example.com
+
+delete vm:
  stage:  theend
  when: manual
  script:
+   - *install_gcloud
    - *delete_gcp_vm
  environment:
    name: branch/$CI_COMMIT_REF_NAME
