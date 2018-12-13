@@ -1,0 +1,23 @@
+concurrent = 5   # All registered Runners can run up to 50 concurrent jobs
+
+[[runners]]
+  name = "autoscale-runner"
+  executor = "docker+machine"        # This Runner is using the 'docker+machine' executor
+  limit = 1                         # This Runner can execute up to 10 jobs (created machines)
+  [runners.docker]
+    image = "ruby:2.4.2"               # The default image used for jobs is 'ruby:2.1'
+  [runners.machine]
+    IdleCount = 1                    # There must be 5 machines in Idle state - when Off Peak time mode is off
+    IdleTime = 600                   # Each machine can be in Idle state up to 600 seconds (after this it will be removed) - when Off Peak time mode is off
+    MaxBuilds = 10                  # Each machine can handle up to 100 jobs in a row (after this it will be removed)
+    MachineName = "auto-scale-%s"    # Each machine will have a unique name ('%s' is required)
+    MachineDriver = "google"   # Docker Machine is using the 'digitalocean' driver
+    MachineOptions = [
+        "google-project=docker-223411",
+        "google-machine-image=https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts",
+        "google-machine-type=n1-standard-1",
+        "google-zone=europe-west1-b",
+        "google-preemptible=true",
+        "google-use-internal-ip=true",
+        "google-use-internal-ip-only=true"
+    ]

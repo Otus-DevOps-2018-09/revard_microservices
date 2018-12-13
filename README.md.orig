@@ -17,7 +17,7 @@ https://docs.gitlab.com/omnibus/docker/README.html
 
 #### Prepare infrastructure
 
-In directory `project_dir/gitlab-ci` you need to use terraform and ansible to prepare gitlab-ci host. Image created by packer.
+In directory `/infra` you need to use terraform and ansible to prepare gitlab-ci host. Image created by packer.
 
 Terraform: 
 ```

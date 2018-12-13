@@ -1,0 +1,6 @@
+- src: jgeerlingguy.docker
+  version: v2.5.1
+- src: geerlingguy.pip
+  version: v1.3
+- src: solval.gitlab_runner
+  version: v2.2

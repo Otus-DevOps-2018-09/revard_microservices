@@ -9,6 +9,7 @@ variables.json
 jdauphant.nginx
 geerlingguy.docker
 geerlingguy.pip
+solval.gitlab_runner
 vault.key
 # Vagrant & molecule
 .vagrant/
