@@ -29,7 +29,7 @@ before_script:
  apt-get update && apt-get -y install google-cloud-sdk
  echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
  gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
- gcloud compute instances delete gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID 
+ gcloud compute instances delete gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --zone=europe-west1-b  --quiet
  echo "Delete VM - gitlab-gcp-vm-$CI_PIPELINE_ID"
 
 branch review:
