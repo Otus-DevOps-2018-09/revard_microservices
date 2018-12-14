@@ -17,10 +17,9 @@ services:
   - docker:dind
 
 before_script:
- - apk --no-cache add g++ make ruby-bundler
+ - apk --no-cache add g++ make ruby-bundler && bundle install
  - cd reddit
  - bundle install
-
 
 .install_gcloud: &install_gcloud |
  export CLOUD_SDK_REPO="cloud-sdk-jessie"
