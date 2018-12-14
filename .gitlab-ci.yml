@@ -43,8 +43,8 @@ build_job:
     - linux
   script:
     - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD"
-    - docker build --pull -t "gitlab-ci-img:$CI_COMMIT_REF_SLUG" .
-    - docker push "$DH_REGISTRY_USER/$CI_COMMIT_REF_SLUG"
+    - docker build --pull -t "$DH_REGISTRY_USER:$CI_COMMIT_REF_SLUG" .
+    - docker push "$DH_REGISTRY_USER:$CI_COMMIT_REF_SLUG"
     - echo 'Building'
 
 test_unit_job:
