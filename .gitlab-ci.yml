@@ -42,7 +42,7 @@ build_job:
   tags:
     - linux
   script:
-    - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
+    - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD"
     - docker build --pull -t "gitlab-ci-img:$CI_COMMIT_REF_SLUG" .
     - docker push "gitlab-ci-img:$CI_COMMIT_REF_SLUG"
     - echo 'Building'
