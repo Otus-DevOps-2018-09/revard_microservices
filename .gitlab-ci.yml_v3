@@ -1,0 +1,128 @@
+image: ruby:2.4.2
+
+stages:
+  - build
+  - test
+  - review
+  - stage
+  - production
+  - theend
+
+variables:
+ DATABASE_URL: 'mongodb://mongo/user_posts'
+
+before_script:
+ - cd reddit
+ - bundle install
+
+.install_docker: &install_docker |
+ export DOCKER_REPO="jessie"
+ apt-get update
+ apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+ curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $DOCKER_REPO stable"
+ apt-get update && apt-get -y install docker-ce
+
+.install_gcloud: &install_gcloud |
+ export CLOUD_SDK_REPO="cloud-sdk-jessie"
+ echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+ apt-get update && apt-get -y install google-cloud-sdk
+ echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
+ gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
+ echo "Gcloud installed"
+
+.create_gcp_vm: &create_gcp_vm |
+ gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-deploy-server,http-server,https-server  --image-family docker-host --preemptible --zone europe-west1-b
+ echo "New VM - gitlab-gcp-vm-$CI_PIPELINE_ID created"
+
+.delete_gcp_vm: &delete_gcp_vm |
+ gcloud compute instances delete gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --zone=europe-west1-b  --quiet
+ echo "Delete VM - gitlab-gcp-vm-$CI_PIPELINE_ID"
+
+build_job:
+  stage: build
+  tags:
+    - linux
+  script:
+    - *install_docker
+    - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
+    - docker build --pull -t "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - echo 'Building'
+
+test_unit_job:
+  stage: test
+  tags:
+    - linux
+  services:
+    - mongo:latest
+  script:
+    - ruby simpletest.rb
+
+test_integration_job:
+  stage: test
+  tags:
+    - linux
+  script:
+    - echo 'Testing 2'
+
+deploy_dev_job:
+  stage: review
+  tags:
+    - linux
+  script:
+    - echo 'Deploy'
+  environment:
+    name: dev
+    url: http://dev.example.com
+
+branch review:
+ stage: review
+ script:
+   - *install_gcloud
+   - *create_gcp_vm
+ environment:
+   name: branch/$CI_COMMIT_REF_NAME
+   url: http://$CI_ENVIRONMENT_SLUG.example.com
+ only:
+   - branches
+ except:
+   - master
+
+staging:
+  stage: stage
+  when: manual
+  only:
+    - /^\d+\.\d+\.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: stage
+    url: http://beta.example.com
+
+production:
+  stage: production
+  when: manual
+  only:
+    - /^\d+\.\d+\.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: production
+    url: http://example.com
+
+delete vm:
+ stage: theend
+ when: manual
+ script:
+   - *install_gcloud
+   - *delete_gcp_vm
+ environment:
+   name: branch/$CI_COMMIT_REF_NAME
+   url: http://$CI_ENVIRONMENT_SLUG.example.com
+ only:
+   - branches
+ except:
+   - master
+
