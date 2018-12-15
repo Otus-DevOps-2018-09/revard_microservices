@@ -91,9 +91,6 @@ deploy_dev_job:
 
 branch review:
  stage: review
- script:
-   - *install_gcloud
-   - *create_gcp_vm
  environment:
    name: branch/$CI_COMMIT_REF_NAME
    url: http://$CI_ENVIRONMENT_SLUG.example.com
@@ -109,6 +106,7 @@ staging:
     - /^\d+\.\d+\.\d+/
   script:
     - *install_gcloud
+    - *create_gcp_vm
     - *deploy_container_gce
     - echo 'Deploy'
   environment:
