@@ -104,7 +104,7 @@ staging:
     - /^\d+\.\d+\.\d+/
   script:
     - *install_gcloud
-    - gcloud compute ssh gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --force-key-file-overwrite --command "sudo docker version"
+    - gcloud compute ssh gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --force-key-file-overwrite --zone europe-west1-b --command "sudo docker version"
     - echo 'Deploy'
   environment:
     name: stage
