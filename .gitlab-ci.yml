@@ -2,7 +2,6 @@ image: ruby:2.4.2
 
 stages:
   - stage
-  - production
   - theend
 
 variables:
@@ -51,53 +50,6 @@ before_script:
  gcloud compute instances delete gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --project $PROJECT_ID --zone=europe-west1-b  --quiet
  echo "Delete VM - gitlab-gcp-vm-$CI_COMMIT_REF_SLUG"
 
-build_job:
-  stage: build
-  tags:
-    - linux
-  script:
-    - *install_docker
-    - *create_container_dh
-    - echo 'Building'
-
-test_unit_job:
-  stage: test
-  tags:
-    - linux
-  services:
-    - mongo:latest
-  script:
-    - ruby simpletest.rb
-
-test_integration_job:
-  stage: test
-  tags:
-    - linux
-  script:
-    - echo 'Testing 2'
-
-deploy_dev_job:
-  stage: review
-  tags:
-    - linux
-  script:
-    - echo 'Deploy'
-  environment:
-    name: dev
-    url: http://dev.example.com
-
-branch review:
- stage: review
- script:
-   - echo "Deploy to $CI_ENVIRONMENT_SLUG"
- environment:
-   name: branch/$CI_COMMIT_REF_NAME
-   url: http://$CI_ENVIRONMENT_SLUG.example.com
- only:
-   - branches
- except:
-   - master
-
 staging:
   stage: stage
   when: manual
@@ -111,17 +63,6 @@ staging:
   environment:
     name: stage
     url: http://beta.example.com
-
-production:
-  stage: production
-  when: manual
-  only:
-    - /^\d+\.\d+\.\d+/
-  script:
-    - echo 'Deploy'
-  environment:
-    name: production
-    url: http://example.com
 
 delete vm:
  stage: theend
