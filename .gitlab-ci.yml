@@ -53,8 +53,6 @@ before_script:
 staging:
   stage: stage
   when: manual
-  only:
-    - /^\d+\.\d+\.\d+/
   script:
     - *install_gcloud
     - *create_gcp_vm
@@ -67,8 +65,6 @@ staging:
 delete vm:
  stage: theend
  when: manual
- only:
-   - /^\d+\.\d+\.\d+/
  script:
    - *install_gcloud
    - *delete_gcp_vm
