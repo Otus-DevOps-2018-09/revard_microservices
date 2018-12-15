@@ -91,7 +91,8 @@ deploy_dev_job:
 
 branch review:
  stage: review
- script: echo "Deploy to $CI_ENVIRONMENT_SLUG"
+ script:
+   - echo "Deploy to $CI_ENVIRONMENT_SLUG"
  environment:
    name: branch/$CI_COMMIT_REF_NAME
    url: http://$CI_ENVIRONMENT_SLUG.example.com
@@ -128,13 +129,10 @@ production:
 delete vm:
  stage: theend
  when: manual
+ only:
+  - /^\d+\.\d+\.\d+/
  script:
    - *install_gcloud
    - *delete_gcp_vm
- environment:
-   name: branch/$CI_COMMIT_REF_NAME
-   url: http://$CI_ENVIRONMENT_SLUG.example.com
- only:
-   - branches
- except:
-   - master
+
+
