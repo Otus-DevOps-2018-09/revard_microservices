@@ -28,6 +28,14 @@ before_script:
  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $DOCKER_REPO stable"
  apt-get update && apt-get -y install docker-ce
 
+.create_container_dh: &create_container_dh |
+ docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD"
+ cd .. 
+ docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+ docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+
+.deploy_container_gce: &deploy_container_gce |
+ gcloud compute ssh gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --force-key-file-overwrite --zone europe-west1-b --command "sudo docker version"
 
 .install_gcloud: &install_gcloud |
  export CLOUD_SDK_REPO="cloud-sdk-jessie"
@@ -52,10 +60,7 @@ build_job:
     - linux
   script:
     - *install_docker
-    - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD"
-    - cd .. 
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - *create_container_dh
     - echo 'Building'
 
 test_unit_job:
@@ -104,7 +109,7 @@ staging:
     - /^\d+\.\d+\.\d+/
   script:
     - *install_gcloud
-    - gcloud compute ssh gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --force-key-file-overwrite --zone europe-west1-b --command "sudo docker version"
+    - *deploy_container_gce
     - echo 'Deploy'
   environment:
     name: stage
@@ -134,4 +139,3 @@ delete vm:
    - branches
  except:
    - master
-
