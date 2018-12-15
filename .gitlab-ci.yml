@@ -130,7 +130,7 @@ delete vm:
  stage: theend
  when: manual
  only:
-  - /^\d+\.\d+\.\d+/
+   - /^\d+\.\d+\.\d+/
  script:
    - *install_gcloud
    - *delete_gcp_vm
