@@ -1,5 +1,21 @@
 # Otus devops course [Microservices]
 
+
+## HW-17 Gitlab-ci-2
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=gitlab-ci-2)
+
+### Gitlab-ci
+
+For proper jobs work setup Variables in CI/CD settings:
+```
+DH_REGISTRY_PASSWORD   - docker hub password
+DH_REGISTRY_USER  - docker hub user
+DH_REPO  - <docker_hub_user>/<repository>
+DEPLOY_KEY_FILE  - json from gcp account
+PROJECT_ID  - gcp project
+```
+
+
 ## HW-16 Gitlab-ci-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=gitlab-ci-1)
 
