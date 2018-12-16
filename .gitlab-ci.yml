@@ -31,8 +31,8 @@ before_script:
 .create_container_dh: &create_container_dh |
  docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD"
  cd .. 
- docker build --pull -t "$DOCKER_HUB_REPO:$CI_COMMIT_REF_SLUG" .
- docker push "$DOCKER_HUB_REPO:$CI_COMMIT_REF_SLUG"
+ docker build --pull -t "$DH_REPO:$CI_COMMIT_REF_SLUG" .
+ docker push "$DH_REPO:$CI_COMMIT_REF_SLUG"
 
 .deploy_container_gce: &deploy_container_gce |
  gcloud compute ssh gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --force-key-file-overwrite --zone europe-west1-b --command "docker login -u $DH_REGISTRY_USER -p $DH_REGISTRY_PASSWORD && sudo docker --name reddit -d -p 9292:9292 $DH_REGISTRY_USER/otus-gitlab-ci:$CI_COMMIT_REF_SLUG"
