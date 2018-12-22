@@ -3,6 +3,7 @@ gitlab_runner_list:
   - description: Runner 1 example
     url: http://{{ hostvars['gitlab-ci']['gce_public_ip'] }}/ 
     executor: docker
-    docker-image: ruby:2.4
-    registration-token: <your_gitlab_token>
+    docker-image: docker:dind
+    registration-token: DHbMD_xU2WC7ExffFh33
     tag-list: linux
+    docker-privileged: true

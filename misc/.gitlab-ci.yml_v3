@@ -10,11 +10,6 @@ stages:
 
 variables:
  DATABASE_URL: 'mongodb://mongo/user_posts'
- DOCKER_HOST: tcp://docker:2375/
- DOCKER_DRIVER: overlay2
-
-services:
-  - docker:dind
 
 before_script:
  - cd reddit
@@ -28,31 +23,22 @@ before_script:
  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $DOCKER_REPO stable"
  apt-get update && apt-get -y install docker-ce
 
-.create_container_dh: &create_container_dh |
- docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD"
- cd .. 
- docker build --pull -t "$DH_REPO:$CI_COMMIT_REF_SLUG" .
- docker push "$DH_REPO:$CI_COMMIT_REF_SLUG"
-
-.deploy_container_gce: &deploy_container_gce |
- gcloud compute ssh gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --force-key-file-overwrite --zone europe-west1-b --command "docker login -u $DH_REGISTRY_USER -p $DH_REGISTRY_PASSWORD && sudo docker run --name reddit -d -p 9292:9292 $DH_REGISTRY_USER/otus-gitlab-ci:$CI_COMMIT_REF_SLUG"
-
 .install_gcloud: &install_gcloud |
  export CLOUD_SDK_REPO="cloud-sdk-jessie"
  echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
  apt-get update && apt-get -y install google-cloud-sdk
- echo $DEPLOY_KEY_FILE > /tmp/$CI_COMMIT_REF_SLUG.json
- gcloud auth activate-service-account --key-file /tmp/$CI_COMMIT_REF_SLUG.json
+ echo $DEPLOY_KEY_FILE > /tmp/$CI_PIPELINE_ID.json
+ gcloud auth activate-service-account --key-file /tmp/$CI_PIPELINE_ID.json
  echo "Gcloud installed"
 
 .create_gcp_vm: &create_gcp_vm |
- gcloud compute instances create gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --project $PROJECT_ID --tags=gitlab-deploy-server,http-server,https-server  --image-family docker-host --preemptible --zone europe-west1-b
- echo "New VM - gitlab-gcp-vm-$CI_COMMIT_REF_SLUG created"
+ gcloud compute instances create gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --tags=gitlab-deploy-server,http-server,https-server  --image-family docker-host --preemptible --zone europe-west1-b
+ echo "New VM - gitlab-gcp-vm-$CI_PIPELINE_ID created"
 
 .delete_gcp_vm: &delete_gcp_vm |
- gcloud compute instances delete gitlab-gcp-vm-$CI_COMMIT_REF_SLUG --project $PROJECT_ID --zone=europe-west1-b  --quiet
- echo "Delete VM - gitlab-gcp-vm-$CI_COMMIT_REF_SLUG"
+ gcloud compute instances delete gitlab-gcp-vm-$CI_PIPELINE_ID --project $PROJECT_ID --zone=europe-west1-b  --quiet
+ echo "Delete VM - gitlab-gcp-vm-$CI_PIPELINE_ID"
 
 build_job:
   stage: build
@@ -60,7 +46,9 @@ build_job:
     - linux
   script:
     - *install_docker
-    - *create_container_dh
+    - docker login -u "$DH_REGISTRY_USER" -p "$DH_REGISTRY_PASSWORD" "$DH_REGISTRY"
+    - docker build --pull -t "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$DH_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     - echo 'Building'
 
 test_unit_job:
@@ -92,7 +80,8 @@ deploy_dev_job:
 branch review:
  stage: review
  script:
-   - echo "Deploy to $CI_ENVIRONMENT_SLUG"
+   - *install_gcloud
+   - *create_gcp_vm
  environment:
    name: branch/$CI_COMMIT_REF_NAME
    url: http://$CI_ENVIRONMENT_SLUG.example.com
@@ -107,10 +96,6 @@ staging:
   only:
     - /^\d+\.\d+\.\d+/
   script:
-    - *install_gcloud
-    - *create_gcp_vm
-    - sleep 60
-    - *deploy_container_gce
     - echo 'Deploy'
   environment:
     name: stage
@@ -122,7 +107,7 @@ production:
   only:
     - /^\d+\.\d+\.\d+/
   script:
-    - echo 'Deploy' ac
+    - echo 'Deploy'
   environment:
     name: production
     url: http://example.com
@@ -130,8 +115,14 @@ production:
 delete vm:
  stage: theend
  when: manual
- only:
-   - /^\d+\.\d+\.\d+/
  script:
    - *install_gcloud
    - *delete_gcp_vm
+ environment:
+   name: branch/$CI_COMMIT_REF_NAME
+   url: http://$CI_ENVIRONMENT_SLUG.example.com
+ only:
+   - branches
+ except:
+   - master
+

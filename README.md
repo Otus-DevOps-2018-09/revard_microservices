@@ -1,5 +1,56 @@
 # Otus devops course [Microservices]
 
+## HW-17 Gitlab-ci-2
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=gitlab-ci-2)
+
+### Gitlab-ci
+
+Clone repo. Use terraform and ansible for install gitlab-ci host as described in previous README section.
+
+#### Configuration
+
+All magic (logic) in .gitlab-ci.yml. We use different environments fot stage and production.
+
+In build stage we create docker container and push it to our docker hub repository.
+
+In case of adding new version (addin tag) we create stage server (gce instance) and deploy our container app on this instance.
+
+After deploy you can delete stage server by runnig job "delete vm".
+
+!For proper jobs work setup Variables in CI/CD settings! :
+```
+DH_REGISTRY_PASSWORD   - docker hub password
+DH_REGISTRY_USER  - docker hub user
+DH_REPO  - <docker_hub_user>/<repository>
+DEPLOY_KEY_FILE  - json from gcp account
+PROJECT_ID  - gcp project
+```
+
+#### Adding new version 
+
+Using of tags:
+```
+$> git tag 3.0.2
+$> git commit -a -m "GCP ssh test"
+[gitlab-ci-2 c9658f6] GCP ssh test
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$> git push gitlab2 gitlab-ci-2 --tags
+Counting objects: 3, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 298 bytes | 298.00 KiB/s, done.
+Total 3 (delta 2), reused 0 (delta 0)
+To http://35.205.xxx.xxx/homework/example2.git
+   c477b0d..c9658f6  gitlab-ci-2 -> gitlab-ci-2
+```
+#### Docker container 
+
+For creating app container we use Dockerfile in root dir of project.
+
+### Tips
+
+Delete old runner in `/etc/gitlab-runner/config.toml`
+
 ## HW-16 Gitlab-ci-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=gitlab-ci-1)
 
@@ -89,9 +140,14 @@ Runner registered successfully.
 
 For half-manual registration of docker runner:
 ```
-appuser@gitlab-runner:~$ sudo gitlab-runner register --name my-runner --url http://<gitlab_IP>/ /
---registration-token <gitlab_token>  --executor=docker --docker-image=ruby-2.4 /
---tag-list=linux --non-interactive
+appuser@gitlab-runner:~$ sudo gitlab-runner register --name my-runner /
+--url http://<gitlab_IP>/ /
+--registration-token <gitlab_token> /
+--executor=docker /
+--docker-image=ruby-2.4 /
+--tag-list=linux /
+--non-interactive
+
 Runtime platform                                    arch=amd64 os=linux pid=16733 revision=7f00c780 version=11.5.1
 Running in system-mode.                            
                                                    
