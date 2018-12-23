@@ -1,5 +1,43 @@
 # Otus devops course [Microservices]
 
+## HW-18 Monitoring-1
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=monitoring-1)
+
+### Install
+
+Clone repo.
+
+Prepare infra.
+
+Build images:
+```
+$ cd docker/ && docker build -t $USER_NAME/prometheus .
+
+$ cd src/ && for i in ui post-py comment; do cd src/$i; bash docker_build.sh; cd -; done
+```
+
+
+Docker-machine:
+```
+$ gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+$ gcloud compute firewall-rules create puma-default --allow tcp:9292 
+
+$ export GOOGLE_PROJECT=_ваш-проект_ 
+
+$ docker-machine create --driver google \
+--google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+--google-machine-type n1-standard-1 \
+--google-zone europe-west1-b \
+docker-host
+
+$ eval $(docker-machine env docker-host)
+
+$ cd docker/ && docker-compose up -d
+
+```
+
+
+
 ## HW-17 Gitlab-ci-2
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=gitlab-ci-2)
 
