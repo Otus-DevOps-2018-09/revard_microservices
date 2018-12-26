@@ -2,7 +2,7 @@ version: '3.3'
 services:
 
   prometheus:
-    image: ${USERNAME}/prometheus
+    image: ${USER_NAME}/prometheus
     ports:
       - '9090:9090'
     volumes:
@@ -40,6 +40,13 @@ services:
       - back_net
       - metrics_net
 
+  cloudprober:
+    image: ${USER_NAME}/cloudprober
+    networks:
+       - front_net
+       - back_net
+       - metrics_net
+
   post_db:
     image: mongo:3.2
     volumes:
@@ -50,20 +57,20 @@ services:
          - comment_db
 
   ui:
-    image: ${USERNAME}/ui:latest
+    image: ${USER_NAME}/ui:latest
     ports:
       - ${PORT_HOST}:${PORT_CONTAINER}/tcp
     networks:
       - front_net
 
   post:
-    image: ${USERNAME}/post:latest
+    image: ${USER_NAME}/post:latest
     networks:
       - back_net
       - front_net
 
   comment:
-    image: ${USERNAME}/comment:latest
+    image: ${USER_NAME}/comment:latest
     networks:
       - back_net
       - front_net
