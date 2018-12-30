@@ -1,5 +1,35 @@
 # Otus devops course [Microservices]
 
+## HW-18 Monitoring-2
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=monitoring-2)
+
+### Install
+
+Clone repo.
+
+#### Prepare infra.
+
+Run `make`. By default it will create docker-machine in gce and run docker-compose to setup all containers.
+
+### Links
+
+Check it out ;-)
+
+http://35.240.87.184/     - Reddit app
+
+http://35.240.87.184:9090 - Prometheus
+
+http://35.240.87.184:8080 - cAdvisor
+
+http://35.240.87.184:3000 - Grafana
+
+http://35.240.87.184:9093 - Alertmanager
+
+#### Tips
+
+Webhooks https://api.slack.com/incoming-webhooks
+
+
 ## HW-18 Monitoring-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=monitoring-1)
 
