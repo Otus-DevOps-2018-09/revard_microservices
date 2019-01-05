@@ -8,3 +8,12 @@ receivers:
 - name: 'slack-notifications'
   slack_configs:
   - channel: '#taras_zaviryukha'
+
+  - name: 'email'
+  email_configs:
+    - to: username@gmail.com
+      from: username@gmail.com
+      smarthost: smtp.gmail.com:587
+      auth_username: "username@gmail.com"
+      auth_identity: "username@gmail.com"
+      auth_password: "secret"

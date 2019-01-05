@@ -13,6 +13,7 @@ services:
       - '--storage.tsdb.retention=1d'
     networks:
       - front_net
+      - back_net
       - metrics_net
 
   node-exporter:
@@ -62,7 +63,7 @@ services:
       - metrics_net
 
   grafana:
-    image: grafana/grafana:5.0.0
+    image: ${USER_NAME}/grafana
     volumes:
       - grafana_data:/var/lib/grafana
     environment:
@@ -84,6 +85,17 @@ services:
     ports:
       - 9093:9093
     networks:
+      - metrics_net
+
+  telegraf:
+    image: ${USER_NAME}/telegraf
+    ports:
+      - 9273:9273
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - front_net
+      - back_net
       - metrics_net
 
 volumes:

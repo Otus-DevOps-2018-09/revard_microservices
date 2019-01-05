@@ -1,6 +1,6 @@
 # Otus devops course [Microservices]
 
-## HW-18 Monitoring-2
+## HW-19 Monitoring-2
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=monitoring-2)
 
 ### Install
@@ -9,21 +9,29 @@ Clone repo.
 
 #### Prepare infra.
 
-Run `make`. By default it will create docker-machine in gce and run docker-compose to setup all containers.
+Run `make`. By default it will create docker-machine in gce and run docker-compose to setup all containers. Dont forget to setup USER_NAME and GOOGLE_PROJECT variables. There is also some useful features in Makefile.
+
+#### Monitoring
+
+All things is automated. 
+
+For docker monitoring you need manualy use `docker/daemon.json` as mentioned here https://docs.docker.com/config/thirdparty/prometheus/
+
+For slack and mail alerting edit `monitoring/alertmanager/config.yml`
 
 ### Links
 
 Check it out ;-)
 
-http://35.240.87.184/     - Reddit app
+http://<DC-MACHINE-IP>/     - Reddit app
 
-http://35.240.87.184:9090 - Prometheus
+http://<DC-MACHINE-IP>:9090 - Prometheus
 
-http://35.240.87.184:8080 - cAdvisor
+http://<DC-MACHINE-IP>:8080 - cAdvisor
 
-http://35.240.87.184:3000 - Grafana
+http://<DC-MACHINE-IP>:3000 - Grafana (admin secret)
 
-http://35.240.87.184:9093 - Alertmanager
+http://<DC-MACHINE-IP>:9093 - Alertmanager
 
 #### Tips
 

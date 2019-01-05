@@ -1,7 +1,7 @@
 {
   "__inputs": [
     {
-      "name": "DS_PROMETHEUS_SERVER",
+      "name": "Prometheus",
       "label": "Prometheus server",
       "description": "",
       "type": "datasource",
@@ -53,7 +53,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS_SERVER}",
+      "datasource": "Prometheus",
       "fill": 1,
       "gridPos": {
         "h": 9,
