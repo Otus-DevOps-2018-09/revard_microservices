@@ -9,7 +9,7 @@ Clone repo.
 
 #### Prepare infra.
 
-Run `make`. By default it will create docker-machine in gce and run docker-compose to setup all containers. Dont forget to setup USER_NAME and GOOGLE_PROJECT variables. There is also some useful features in Makefile.
+Run `make; eval $(docker-machine env docker-host); make`. By default it will create docker-machine in gce and run docker-compose to setup all containers. Dont forget to setup USER_NAME and GOOGLE_PROJECT variables. There is also some useful features in Makefile.
 
 #### Monitoring
 

@@ -9,7 +9,7 @@ receivers:
   slack_configs:
   - channel: '#taras_zaviryukha'
 
-  - name: 'email'
+- name: 'email'
   email_configs:
     - to: username@gmail.com
       from: username@gmail.com
