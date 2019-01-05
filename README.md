@@ -22,7 +22,7 @@ For slack and mail alerting edit `monitoring/alertmanager/config.yml`
 ### Links
 
 Check it out ;-)
-
+```
 http://<DC-MACHINE-IP>/     - Reddit app
 
 http://<DC-MACHINE-IP>:9090 - Prometheus
@@ -32,6 +32,7 @@ http://<DC-MACHINE-IP>:8080 - cAdvisor
 http://<DC-MACHINE-IP>:3000 - Grafana (admin secret)
 
 http://<DC-MACHINE-IP>:9093 - Alertmanager
+```
 
 #### Tips
 
