@@ -1,5 +1,40 @@
 # Otus devops course [Microservices]
 
+## HW-20 Logging-1
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=logging-1)
+
+### Install
+
+Clone repo.
+
+#### Prepare infra.
+
+Run `make; eval $(docker-machine env docker-host); make`. By default it will create docker-machine in gce and run docker-compose to setup all containers. Dont forget to setup USER_NAME and GOOGLE_PROJECT variables. There is also some useful features in Makefile.
+
+#### Loggining
+
+### Links
+
+Check it out ;-)
+```
+http://DC-MACHINE-IP/     - Reddit app
+
+http://DC-MACHINE-IP:9090 - Prometheus
+
+http://DC-MACHINE-IP:8080 - cAdvisor
+
+http://DC-MACHINE-IP:3000 - Grafana (admin secret)
+
+http://DC-MACHINE-IP:9093 - Alertmanager
+
+http://DC-MACHINE-IP:5601 - Kibana
+
+http://DC-MACHINE-IP:9411 - Zipkin
+```
+
+#### Tips
+
+
 ## HW-19 Monitoring-2
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=monitoring-2)
 
