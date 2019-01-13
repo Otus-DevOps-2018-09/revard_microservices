@@ -15,9 +15,9 @@ Run `make; eval $(docker-machine env docker-host); make`. By default it will cre
 
 Key concept of EFK:
 
-..* ElasticSearch - TSDB and search engine for storing data
-..* Fluentd - for agregation and transformation of data
-..* Kibana - visualisation
+* ElasticSearch - TSDB and search engine for storing data
+* Fluentd - for agregation and transformation of data
+* Kibana - visualisation
 
 ### Fluentd
 
