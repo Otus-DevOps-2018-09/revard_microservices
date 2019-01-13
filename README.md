@@ -13,6 +13,26 @@ Run `make; eval $(docker-machine env docker-host); make`. By default it will cre
 
 #### Loggining
 
+Key concept of EFK:
+
+*ElasticSearch - TSDB and search engine for storing data
+*Fluentd - for agregation and transformation of data
+*Kibana - visualisation
+
+###
+
+Main config `logging/fluentd/fluent.conf `
+
+For parsing you can yuse grok regexp https://github.com/logstash-plugins/logstash-patterns-core/blob/master/patterns/grok-patternspatterns
+
+### Kibana
+
+For using kibana in "Managment section" create index in field "Index pattern" `fluent-d*` and next select field "Time Filter field name" `@timestamp`. After click "Discover" section to seen logs.
+
+### Zipkin
+
+Zipkin is a great distributed tracing system. https://zipkin.io/
+
 ### Links
 
 Check it out ;-)
@@ -34,6 +54,15 @@ http://DC-MACHINE-IP:9411 - Zipkin
 
 #### Tips
 
+* Elastic runing trouble
+
+On docker machine run `sudo sysctl -w vm.max_map_count=262144` for proper working of elacticsearch.
+
+* Clone repo branch
+
+```
+git clone --single-branch --branch bugged https://github.com/express42/reddit.git 
+```
 
 ## HW-19 Monitoring-2
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=monitoring-2)

@@ -2,7 +2,7 @@ version: '3'
 services:
   
   zipkin:
-    image: openzipkin/zipkin
+    image: openzipkin/zipkin:2.11.8
     ports:
       - "9411:9411"
     networks:

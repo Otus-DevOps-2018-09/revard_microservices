@@ -1,10 +1,12 @@
-default: start-bundle
+default: start
 
-start-bundle: dm-create dc-up
-stop-bundle: dc-stop dm-rm
+start: dm-create
+stop: dc-stop 
 
-build: build-comment build-post build-ui build-prometheus build-cloudprober build-grafana build-alertmanager build-telegraf
-push: push-comment push-post push-ui push-prometheus push-cloudprober push-grafana push-alertmanager push-telegraf
+build: build-comment build-post build-ui build-prometheus build-cloudprober build-grafana build-alertmanager build-telegraf build-fluentd
+build-app: build-comment build-post build-ui
+push:  push-comment  push-post  push-ui  push-prometheus  push-cloudprober  push-grafana  push-alertmanager  push-telegraf  push-fluentd
+push-app: push-comment  push-post  push-ui
 
 comment: build-comment push-comment
 post: build-post push-post
@@ -103,8 +105,8 @@ dm-create:
     --google-open-port 9292/tcp \
     --google-open-port 9411/tcp \
     logging
-	echo 'Run - eval $$(docker-machine env logging)'
+	echo 'Run - eval $$(docker-machine env logging); make dc-up'
 
 dm-rm:
 	docker-machine rm logging
-	echo 'Run - eval $$(docker-machine env -u)'
+	echo 'Run - eval $$(docker-machine env -u); make dc-rm'
