@@ -20,3 +20,4 @@ vault.key
 .pytest_cache
 *.pem
 .env
+/kubernetes/k8s_th_hard_way/*
