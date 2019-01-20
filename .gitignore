@@ -19,4 +19,5 @@ vault.key
 .cache
 .pytest_cache
 *.pem
+*.csr
 .env
