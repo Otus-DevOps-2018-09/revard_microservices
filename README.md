@@ -1,5 +1,49 @@
 # Otus devops course [Microservices]
 
+
+## HW-21 Kubernetes-1
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-1)
+
+### Install
+
+Clone repo.
+
+#### Prepare infra.
+
+For manual install of k8s use docs https://github.com/kelseyhightower/kubernetes-the-hard-way
+
+Automation is possible with using asible playbooks in `kubernetes/ansible` dir. Scripts taken from this repo https://github.com/jugatsu/kubernates-the-hard-way-using-only-ansible
+
+#### Kubernetes 
+
+Kuber deployment configs are in `kubernetes/reddit`
+
+Apply config
+```
+$> cd kubernetes/the_hard_way
+$> kubectl apply -f ../reddit/post-deployment.yml
+$> kubectl apply -f ../reddit/post-deployment.yml
+$> kubectl apply -f ../reddit/post-deployment.yml
+```
+
+Get status 
+```
+$> kubectl get pods -o wide
+NAME                                 READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE
+comment-deployment-754bc78f8-56q6m   1/1     Running   1          29h   10.200.2.10   worker-2   <none>
+mongo-deployment-67f58fb89-s6rlk     1/1     Running   1          29h   10.200.1.9    worker-1   <none>
+nginx-dbddb74b8-gk5cx                1/1     Running   1          29h   10.200.0.8    worker-0   <none>
+post-deployment-5f96cb4944-fsprb     1/1     Running   1          29h   10.200.2.9    worker-2   <none>
+ui-deployment-7859dbdd6d-qtz4w       1/1     Running   1          29h   10.200.0.9    worker-0   <none>
+```
+
+Delete deployments
+```
+$>  kubectl delete -n default deployment nginx
+deployment.extensions "nginx" deleted
+```
+
+
 ## HW-20 Logging-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=logging-1)
 
