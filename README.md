@@ -1,5 +1,144 @@
 # Otus devops course [Microservices]
 
+## HW-22 Kubernetes-2
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-2)
+
+### Install
+
+Clone repo.
+
+### Minicube
+
+Needed VirtualBox https://www.virtualbox.org/wiki/Downloads or KVM https://www.linux-kvm.org/page/Main_Page
+
+Install:
+```
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.27.0/
+minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Start:
+```
+$>  minikube start
+There is a newer version of minikube available (v0.33.1).  Download it here:
+https://github.com/kubernetes/minikube/releases/tag/v0.33.1
+
+To disable this notification, run the following:
+minikube config set WantUpdateNotification false
+Starting local Kubernetes v1.10.0 cluster...
+...
+```
+
+Stop:
+```
+$> minikube stop
+Stopping local Kubernetes cluster...
+Machine stopped.
+```
+
+### Kubectl
+
+Config file `~/.kube/config`
+
+#### Setup:
+
+1) Create cluster - `$ kubectl config set-cluster … cluster_name`
+2) Create users data (credentials) - `$ kubectl config set-credentials … user_name`
+3) Create context - 
+```$ kubectl config set-context context_name \
+--cluster=cluster_name \
+--user=user_name
+```
+4) Use context - `$ kubectl config use-context context_name`
+
+
+See context:
+```
+$> kubectl config current-context
+minikube
+```
+
+All contexts:
+```
+$> kubectl config get-contexts
+CURRENT   NAME                                                  CLUSTER                                               AUTHINFO                                              NAMESPACE
+          gke_docker-223411_europe-west1-b_standard-cluster-1   gke_docker-223411_europe-west1-b_standard-cluster-1   gke_docker-223411_europe-west1-b_standard-cluster-1
+          kubernetes-the-hard-way                               kubernetes-the-hard-way                               admin
+*         minikube                                              minikube                                              minikube
+```
+
+Run deployments `$> kubectl apply -f ./kubernetes/reddit`
+
+#### Admin
+
+Nodes:
+```
+$> kubectl get nodes
+NAME       STATUS   ROLES    AGE   VERSION
+minikube   Ready    master   3d    v1.10.0
+```
+
+Pods:
+```
+$> kubectl get pods
+NAME                       READY   STATUS    RESTARTS   AGE
+comment-6c466cd9f8-6l6lw   1/1     Running   2          2d
+comment-6c466cd9f8-jjds5   1/1     Running   2          2d
+comment-6c466cd9f8-wj8ml   1/1     Running   2          2d
+mongo-b969779f7-459ww      1/1     Running   4          2d
+post-78d5bd774-p2ln8       1/1     Running   6          3d
+post-78d5bd774-r8tb4       1/1     Running   6          3d
+post-78d5bd774-shqb6       1/1     Running   6          3d
+ui-5bd7c96b78-2vfw2        1/1     Running   2          1d
+ui-5bd7c96b78-4njxz        1/1     Running   2          1d
+ui-5bd7c96b78-rgwz7        1/1     Running   2          1d
+```
+
+Services:
+```
+$> kubectl describe service comment | grep Endpoints
+Endpoints:         172.17.0.11:9292,172.17.0.12:9292,172.17.0.9:9292
+
+$> kubectl exec -ti ui-5bd7c96b78-2vfw2 nslookup comment
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      comment
+Address 1: 10.101.102.75 comment.default.svc.cluster.local
+```
+Services list
+```
+$>  minikube service list
+|-------------|----------------------|-----------------------------|
+|  NAMESPACE  |         NAME         |             URL             |
+|-------------|----------------------|-----------------------------|
+| default     | comment              | No node port                |
+| default     | comment-db           | No node port                |
+| default     | kubernetes           | No node port                |
+| default     | mongodb              | No node port                |
+| default     | post                 | No node port                |
+| default     | post-db              | No node port                |
+| default     | ui                   | http://192.168.99.107:31818 |
+| kube-system | kube-dns             | No node port                |
+| kube-system | kubernetes-dashboard | http://192.168.99.107:30000 |
+|-------------|----------------------|-----------------------------|
+```
+
+Logs:
+```
+$> kubectl logs post-78d5bd774-shqb6 
+{"addr": "172.17.0.8", "event": "request", "level": "info", "method": "GET", "path": "/healthcheck?", "request_id": null, "response_status": 200, "service": "post", "timestamp": "2019-01-26 10:3
+1:12"}
+{"addr": "172.17.0.8", "event": "request", "level": "info", "method": "GET", "path": "/healthcheck?", "request_id": null, "response_status": 200, "service": "post", "timestamp": "2019-01-26 10:3
+1:17"}
+...
+```
+
+Port forvard:
+```
+$> kubectl port-forward ui-5bd7c96b78-2vfw2 8080:9292
+Forwarding from 127.0.0.1:8080 -> 9292
+Forwarding from [::1]:8080 -> 9292
+```
 
 ## HW-21 Kubernetes-1
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-1)
@@ -18,15 +157,16 @@ Automation is possible with using asible playbooks in `kubernetes/ansible` dir. 
 
 Kuber deployment configs are in `kubernetes/reddit`
 
-Apply config
+Apply config:
 ```
 $> cd kubernetes/the_hard_way
 $> kubectl apply -f ../reddit/post-deployment.yml
-$> kubectl apply -f ../reddit/post-deployment.yml
-$> kubectl apply -f ../reddit/post-deployment.yml
+$> kubectl apply -f ../reddit/ui-deployment.yml
+$> kubectl apply -f ../reddit/comment-deployment.yml
+$> kubectl apply -f ../reddit/mongo-deployment.yml
 ```
 
-Get status 
+Get status:
 ```
 $> kubectl get pods -o wide
 NAME                                 READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE
@@ -37,7 +177,7 @@ post-deployment-5f96cb4944-fsprb     1/1     Running   1          29h   10.200.2
 ui-deployment-7859dbdd6d-qtz4w       1/1     Running   1          29h   10.200.0.9    worker-0   <none>
 ```
 
-Delete deployments
+Delete deployments:
 ```
 $>  kubectl delete -n default deployment nginx
 deployment.extensions "nginx" deleted
