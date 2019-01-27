@@ -17,7 +17,7 @@ $ curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.27.0/
 minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 ```
 
-Start:
+#### Start
 ```
 $>  minikube start
 There is a newer version of minikube available (v0.33.1).  Download it here:
@@ -29,11 +29,35 @@ Starting local Kubernetes v1.10.0 cluster...
 ...
 ```
 
-Stop:
+#### Stop
 ```
 $> minikube stop
 Stopping local Kubernetes cluster...
 Machine stopped.
+```
+
+#### Addon list
+```
+$>  minikube addons list
+- addon-manager: enabled
+- coredns: disabled
+- dashboard: enabled
+- default-storageclass: enabled
+- efk: disabled
+- freshpod: disabled
+- heapster: disabled
+- ingress: disabled
+- kube-dns: enabled
+- metrics-server: disabled
+- registry: disabled
+- registry-creds: disabled
+- storage-provisioner: enabled
+```
+
+#### Dashboatrd
+```
+$>  minikube service kubernetes-dashboard -n kube-system
+Opening kubernetes service kube-system/kubernetes-dashboard in default browser...
 ```
 
 ### Kubectl
@@ -42,23 +66,22 @@ Config file `~/.kube/config`
 
 #### Setup:
 
-1) Create cluster - `$ kubectl config set-cluster … cluster_name`
-2) Create users data (credentials) - `$ kubectl config set-credentials … user_name`
-3) Create context - 
+1) Create cluster `$ kubectl config set-cluster … cluster_name`
+2) Create users data (credentials)  `$ kubectl config set-credentials … user_name`
+3) Create context 
 ```$ kubectl config set-context context_name \
 --cluster=cluster_name \
 --user=user_name
 ```
-4) Use context - `$ kubectl config use-context context_name`
+4) Use context `$ kubectl config use-context context_name`
 
-
-See context:
+#### See context
 ```
 $> kubectl config current-context
 minikube
 ```
 
-All contexts:
+#### All contexts
 ```
 $> kubectl config get-contexts
 CURRENT   NAME                                                  CLUSTER                                               AUTHINFO                                              NAMESPACE
@@ -69,16 +92,16 @@ CURRENT   NAME                                                  CLUSTER         
 
 Run deployments `$> kubectl apply -f ./kubernetes/reddit`
 
-#### Admin
+### Administration
 
-Nodes:
+#### Nodes
 ```
 $> kubectl get nodes
 NAME       STATUS   ROLES    AGE   VERSION
 minikube   Ready    master   3d    v1.10.0
 ```
 
-Pods:
+#### Pods
 ```
 $> kubectl get pods
 NAME                       READY   STATUS    RESTARTS   AGE
@@ -94,7 +117,7 @@ ui-5bd7c96b78-4njxz        1/1     Running   2          1d
 ui-5bd7c96b78-rgwz7        1/1     Running   2          1d
 ```
 
-Services:
+#### Services
 ```
 $> kubectl describe service comment | grep Endpoints
 Endpoints:         172.17.0.11:9292,172.17.0.12:9292,172.17.0.9:9292
@@ -105,7 +128,7 @@ nslookup: can't resolve '(null)': Name does not resolve
 Name:      comment
 Address 1: 10.101.102.75 comment.default.svc.cluster.local
 ```
-Services list
+#### Services list
 ```
 $>  minikube service list
 |-------------|----------------------|-----------------------------|
@@ -123,7 +146,13 @@ $>  minikube service list
 |-------------|----------------------|-----------------------------|
 ```
 
-Logs:
+#### Start service console
+```
+$> minikube service ui
+Opening kubernetes service default/ui in default browser...
+```
+
+#### Logs
 ```
 $> kubectl logs post-78d5bd774-shqb6 
 {"addr": "172.17.0.8", "event": "request", "level": "info", "method": "GET", "path": "/healthcheck?", "request_id": null, "response_status": 200, "service": "post", "timestamp": "2019-01-26 10:3
@@ -133,11 +162,89 @@ $> kubectl logs post-78d5bd774-shqb6
 ...
 ```
 
-Port forvard:
+#### Port forward
 ```
 $> kubectl port-forward ui-5bd7c96b78-2vfw2 8080:9292
 Forwarding from 127.0.0.1:8080 -> 9292
 Forwarding from [::1]:8080 -> 9292
+```
+
+#### Get all info in NAMESPACE kube-system
+```
+$>  kubectl get all -n kube-system
+NAME                                        READY   STATUS    RESTARTS   AGE
+pod/etcd-minikube                           1/1     Running   0          1h
+pod/kube-addon-manager-minikube             1/1     Running   7          3d
+pod/kube-apiserver-minikube                 1/1     Running   0          1h
+pod/kube-controller-manager-minikube        1/1     Running   0          1h
+pod/kube-dns-86f4d74b45-zqd9g               3/3     Running   47         3d
+pod/kube-proxy-pvcrf                        1/1     Running   0          1h
+pod/kube-scheduler-minikube                 1/1     Running   0          1h
+pod/kubernetes-dashboard-5498ccf677-bkvm9   1/1     Running   40         3d
+pod/storage-provisioner                     1/1     Running   21         3d
+
+NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+service/kube-dns               ClusterIP   10.96.0.10      <none>        53/UDP,53/TCP   3d
+service/kubernetes-dashboard   NodePort    10.109.72.123   <none>        80:30000/TCP    3d
+
+NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/kube-proxy   1         1         1       1            1           <none>          3d
+
+NAME                                   DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kube-dns               1         1         1            1           3d
+deployment.apps/kubernetes-dashboard   1         1         1            1           3d
+
+NAME                                              DESIRED   CURRENT   READY   AGE
+replicaset.apps/kube-dns-86f4d74b45               1         1         1       3d
+replicaset.apps/kubernetes-dashboard-5498ccf677   1         1         1       3d
+```
+
+### GCE Kubernetes
+
+#### Create context config 
+```
+$> gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-b --project docker-xxxxxx
+Fetching cluster endpoint and auth data.
+kubeconfig entry generated for standard-cluster-1.
+```
+#### Dasboard 
+```
+$> kubectl proxy
+Starting to serve on 127.0.0.1:8001
+```
+
+Links:
+
+http://localhost:8001/ui
+
+http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/overview?namespace=default
+
+#### Set rights for service account
+
+```
+$> kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin /
+--serviceaccount=kube-system:kubernetes-dashboard 
+clusterrolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
+```
+
+### Terraform
+
+You can create GCK usin terraform. In dirs `kubernetes/terraform` and `kubernetes/terraform/gck` run :
+
+```
+terraform init
+terraform apply
+```
+
+### Tips
+
+Gcloud useful commands:
+
+```
+gcloud init
+gcloud config list
+cloud auth activate-service-account --key-file ~/xxxxxx.json
+gcloud auth application-default login
 ```
 
 ## HW-21 Kubernetes-1
