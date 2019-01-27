@@ -69,7 +69,7 @@ Config file `~/.kube/config`
 1) Create cluster `$ kubectl config set-cluster … cluster_name`
 2) Create users data (credentials)  `$ kubectl config set-credentials … user_name`
 3) Create context 
-```$ kubectl config set-context context_name \
+``` kubectl config set-context context_name \
 --cluster=cluster_name \
 --user=user_name
 ```
