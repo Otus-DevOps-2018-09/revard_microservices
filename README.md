@@ -1,5 +1,67 @@
 # Otus devops course [Microservices]
 
+## HW-24 Kubernetes-4
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-4)
+
+### Install
+
+Clone repo.
+
+### Helm  - The Kubernetes Package Manager
+
+#### Install
+
+Download, untar and copy to bin dir  https://github.com/helm/helm/releases 
+
+#### Tiller
+
+Tiller is the in-cluster component of Helm. It interacts directly with the Kubernetes API server to install, upgrade, query, and remove Kubernetes resources. It also stores the objects that represent releases.
+
+```
+$ > kubectl apply -f tiller.yml
+serviceaccount/tiller created
+
+$ > helm init --service-account tiller
+...
+Creating /home/user/.helm/repository/repositories.yaml
+Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com
+Adding local repo with URL: http://127.0.0.1:8879/charts
+$HELM_HOME has been configured at /home/user/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+
+Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
+To prevent this, run `helm init` with the --tiller-tls-verify flag.
+For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+Happy Helming!
+
+$ >  kubectl get pods -n kube-system --selector app=helm
+NAME                             READY   STATUS    RESTARTS   AGE
+tiller-deploy-689d79895f-6lb5n   1/1     Running   0          1m
+```
+
+#### Run helm pkg
+
+```
+$ > helm install --name test-ui-1 ui/
+NAME:   test-ui-1
+LAST DEPLOYED: Wed Jan 30 11:12:52 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+
+$ >  helm ls
+NAME            REVISION        UPDATED                         STATUS          CHART           APP VERSION     NAMESPACE
+test-ui-1       1               Wed Jan 30 11:12:52 2019        DEPLOYED        ui-1.0.0        1               default
+
+```
+
+
+
+
+
+
+
 ## HW-23 Kubernetes-3
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-3)
 
