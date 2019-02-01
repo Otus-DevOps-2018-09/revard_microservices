@@ -8,12 +8,10 @@ metadata:
     component: comment
     release: {{ .Release.Name }}
 spec:
-  type: ClusterIP
   ports:
-  - port: {{ .Values.service.externalPort }}
+  - port: 5000
     protocol: TCP
-    targetPort: {{ .Values.service.internalPort }}
+    targetPort: 5000
   selector:
     app: reddit
     component: comment
-    release: {{ .Release.Name }}

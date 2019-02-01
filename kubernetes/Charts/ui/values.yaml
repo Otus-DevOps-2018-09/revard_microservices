@@ -6,3 +6,11 @@ service:
 image:
   repository: revard/ui
   tag: latest
+
+ingress:
+  class: nginx
+
+postHost:
+postPort:
+commentHost:
+commentPort:
