@@ -1,5 +1,165 @@
 # Otus devops course [Microservices]
 
+## HW-23 Kubernetes-3
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-3)
+
+### Install
+
+Clone repo.
+
+### Net services
+
+#### Kube-dns
+```
+$ kubectl scale deployment --replicas 0 -n kube-system kube-dnsautoscaler
+$ kubectl scale deployment --replicas 0 -n kube-system kube-dns
+$ kubectl exec -ti -n dev ui-5bd7c96b78-4bphh ping comment
+ping: bad address 'comment'
+command terminated with exit code 1
+$ kubectl scale deployment --replicas 1 -n kube-system kube-dnsautoscaler
+```
+
+#### LoadBalancer
+
+Config files `ui-ingress.yml` `ui-service.yml`
+```
+$ >  kubectl apply -f ui-service.yml
+service/ui configured
+$ > kubectl get service  --selector component=ui
+NAME   TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+ui     LoadBalancer   10.7.247.109   <pending>     80:32092/TCP   23m
+<WAIT...>
+$ > kubectl get service  --selector component=ui
+NAME   TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)        AGE
+ui     LoadBalancer   10.7.247.109   35.205.220.191   80:32092/TCP   23m
+
+```
+
+#### Ingress
+```
+$ >  kubectl apply -f ./ui-ingress.yml -n dev
+$ >  kubectl get ingress -n dev
+NAME   HOSTS   ADDRESS         PORTS   AGE
+ui     *       35.241.37.235   80      1m
+$ > lynx 35.190.84.49
+```
+
+#### TLS Secret 
+```
+$ >  kubectl get ingress
+NAME   HOSTS   ADDRESS         PORTS   AGE
+ui     *       35.241.37.2   80      25m
+$ >  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=35.241.37.2"
+Generating a 2048 bit RSA private key
+....................+++
+........+++
+writing new private key to 'tls.key'
+-----
+$ >  kubectl create secret tls ui-ingress --key tls.key --cert tls.crt
+secret/ui-ingress created
+$ > kubectl get secrets
+NAME                  TYPE                                  DATA   AGE
+default-token-wrgst   kubernetes.io/service-account-token   3      2h
+ui-ingress            kubernetes.io/tls                     2      1h
+$ >  kubectl describe secret ui-ingress
+Name:         ui-ingress
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Type:  kubernetes.io/tls
+
+Data
+====
+tls.key:  1704 bytes
+tls.crt:  1111 bytes
+$ > lynx https://35.190.84.49
+```
+
+For creating yml file. Encode cert:
+```
+$ > cat tls.key | base64 | tr -d '\n'
+LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS
+...
+$ > cat tls.crt | base64 | tr -d '\n'
+LS0tLS1CRUdJTiBQUklWQVRF
+...
+```
+Add coded secrets to tls-secret.yml
+
+#### Network Policy
+
+Turn on network policy for GKE
+
+```
+$ > gcloud beta container clusters list
+NAME                LOCATION        MASTER_VERSION  MASTER_IP       MACHINE_TYPE   NODE_VERSION   NUM_NODES  STATUS
+standard-cluster-1  europe-west1-b  1.10.11-gke.1   35.241.154.101  n1-standard-1  1.10.11-gke.1  3          RUNNING
+
+$ > gcloud beta container clusters update standard-cluster-1  --zone=europe-west1-b --update-addons=NetworkPolicy=ENABLED
+Updating standard-cluster-1...done.
+Updated [https://container.googleapis.com/v1beta1/projects/docker-223xxx/zones/europe-west1-b/clusters/standard-cluster-1].
+To inspect the contents of your cluster, go to: https://console.cloud.google.com/kubernetes/workload_/gcloud/europe-west1-b/standard-cluster-1?project=docker-223xxx
+
+$ > gcloud beta container clusters update standard-cluster-1 --zone=europe-west1-b  --enable-network-policy
+Enabling/Disabling Network Policy causes a rolling update of all
+cluster nodes, similar to performing a cluster upgrade.  This
+operation is long-running and will block other operations on the
+cluster (including delete) until it has run to completion.
+
+Do you want to continue (Y/n)?
+
+Updating standard-cluster-1...done.
+Updated [https://container.googleapis.com/v1beta1/projects/docker-223xxx/zones/europe-west1-b/clusters/standard-cluster-1].
+To inspect the contents of your cluster, go to: https://console.cloud.google.com/kubernetes/workload_/gcloud/europe-west1-b/standard-cluster-1?project=docker-223xxx
+```
+
+Config in `mongo-network-policy.yml`
+
+### Storage for DB
+
+#### Volume
+
+Create in GCE
+```
+$ >  gcloud compute disks create --size=25GB  reddit-mongo-disk
+Created [https://www.googleapis.com/compute/v1/projects/docker-223xxx/zones/europe-west1-b/disks/reddit-mongo-disk].
+NAME               ZONE            SIZE_GB  TYPE         STATUS
+reddit-mongo-disk  europe-west1-b  25       pd-standard  READY
+```
+
+Config in `mongo-deployment.yml`
+
+Check disks status in GCE https://console.cloud.google.com/compute/disks
+
+#### Persistent volume
+
+Config in `mongo-volume.yml` `mongo-claim.yml`
+
+```
+$ >  kubectl describe storageclass standard -n dev
+Name:                  standard
+IsDefaultClass:        Yes
+Annotations:           storageclass.beta.kubernetes.io/is-default-class=true
+Provisioner:           kubernetes.io/gce-pd
+Parameters:            type=pd-standard
+AllowVolumeExpansion:  <unset>
+MountOptions:          <none>
+ReclaimPolicy:         Delete
+VolumeBindingMode:     Immediate
+Events:                <none>
+```
+
+Storage class in `storage-fast.yml` `mongo-claim-dynamic.yml`
+
+```
+$ >  kubectl get persistentvolume -n dev
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                   STORAGECLASS   REASON   AGE
+pvc-19795a09-23be-11e9-b38f-42010a8400d6   15Gi       RWO            Delete           Bound       dev/mongo-pvc           standard                11m
+pvc-859d3b37-23bf-11e9-b38f-42010a8400d6   10Gi       RWO            Delete           Bound       dev/mongo-pvc-dynamic   fast                    1m
+reddit-mongo-disk                          25Gi       RWO            Retain           Available                                                   12m
+```
+
 ## HW-22 Kubernetes-2
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-2)
 
@@ -85,7 +245,7 @@ minikube
 ```
 $> kubectl config get-contexts
 CURRENT   NAME                                                  CLUSTER                                               AUTHINFO                                              NAMESPACE
-          gke_docker-223411_europe-west1-b_standard-cluster-1   gke_docker-223411_europe-west1-b_standard-cluster-1   gke_docker-223411_europe-west1-b_standard-cluster-1
+          gke_docker-223xxx_europe-west1-b_standard-cluster-1   gke_docker-223xxx_europe-west1-b_standard-cluster-1   gke_docker-223xxx_europe-west1-b_standard-cluster-1
           kubernetes-the-hard-way                               kubernetes-the-hard-way                               admin
 *         minikube                                              minikube                                              minikube
 ```
@@ -225,6 +385,68 @@ http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-da
 $> kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin /
 --serviceaccount=kube-system:kubernetes-dashboard 
 clusterrolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
+```
+
+#### See external port of service
+```
+$ kubectl describe service ui -n dev | grep NodePort
+Type: NodePort
+NodePort: <unset> 31945/TCP
+```
+
+#### K8S systems in GCK
+```
+$ >  kubectl get all -n kube-system
+NAME                                                               READY   STATUS    RESTARTS   AGE
+pod/event-exporter-v0.2.3-54f94754f4-jdhqn                         2/2     Running   0          5h
+pod/fluentd-gcp-scaler-6d7bbc67c5-sx2j4                            1/1     Running   0          5h
+pod/fluentd-gcp-v3.1.0-bk28b                                       2/2     Running   0          5h
+pod/fluentd-gcp-v3.1.0-glsfg                                       2/2     Running   0          5h
+pod/fluentd-gcp-v3.1.0-pf72x                                       2/2     Running   0          5h
+pod/heapster-v1.5.3-79d5b46996-fvfbh                               3/3     Running   0          5h
+pod/kube-dns-788979dc8f-7l28z                                      4/4     Running   0          5h
+pod/kube-dns-788979dc8f-cdjsv                                      4/4     Running   0          5h
+pod/kube-dns-autoscaler-79b4b844b9-zxhx6                           1/1     Running   0          5h
+pod/kube-proxy-gke-standard-cluster-1-default-pool-31619c9a-3b35   1/1     Running   0          5h
+pod/kube-proxy-gke-standard-cluster-1-default-pool-31619c9a-86v4   1/1     Running   0          5h
+pod/kube-proxy-gke-standard-cluster-1-default-pool-31619c9a-drg3   1/1     Running   0          5h
+pod/kubernetes-dashboard-7b9c7bc8c9-fhp76                          1/1     Running   0          8m
+pod/l7-default-backend-5d5b9874d5-qdrks                            1/1     Running   0          5h
+pod/metrics-server-v0.2.1-7486f5bd67-xlnxk                         2/2     Running   0          5h
+
+NAME                           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)         AGE
+service/default-http-backend   NodePort    10.7.245.143   <none>        80:30117/TCP    5h
+service/heapster               ClusterIP   10.7.245.63    <none>        80/TCP          5h
+service/kube-dns               ClusterIP   10.7.240.10    <none>        53/UDP,53/TCP   5h
+service/kubernetes-dashboard   ClusterIP   10.7.254.73    <none>        443/TCP         8m
+service/metrics-server         ClusterIP   10.7.251.248   <none>        443/TCP         5h
+
+NAME                                      DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                  AGE
+daemonset.apps/fluentd-gcp-v3.1.0         3         3         3       3            3           beta.kubernetes.io/fluentd-ds-ready=true       5h
+daemonset.apps/metadata-proxy-v0.1        0         0         0       0            0           beta.kubernetes.io/metadata-proxy-ready=true   5h
+daemonset.apps/nvidia-gpu-device-plugin   0         0         0       0            0           <none>                                         5h
+
+NAME                                    DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/event-exporter-v0.2.3   1         1         1            1           5h
+deployment.apps/fluentd-gcp-scaler      1         1         1            1           5h
+deployment.apps/heapster-v1.5.3         1         1         1            1           5h
+deployment.apps/kube-dns                2         2         2            2           5h
+deployment.apps/kube-dns-autoscaler     1         1         1            1           5h
+deployment.apps/kubernetes-dashboard    1         1         1            1           8m
+deployment.apps/l7-default-backend      1         1         1            1           5h
+deployment.apps/metrics-server-v0.2.1   1         1         1            1           5h
+
+NAME                                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/event-exporter-v0.2.3-54f94754f4   1         1         1       5h
+replicaset.apps/fluentd-gcp-scaler-6d7bbc67c5      1         1         1       5h
+replicaset.apps/heapster-v1.5.3-79d5b46996         1         1         1       5h
+replicaset.apps/heapster-v1.5.3-7cc445c546         0         0         0       5h
+replicaset.apps/kube-dns-788979dc8f                2         2         2       5h
+replicaset.apps/kube-dns-autoscaler-79b4b844b9     1         1         1       5h
+replicaset.apps/kubernetes-dashboard-7b9c7bc8c9    1         1         1       8m
+replicaset.apps/l7-default-backend-5d5b9874d5      1         1         1       5h
+replicaset.apps/metrics-server-v0.2.1-7486f5bd67   1         1         1       5h
+replicaset.apps/metrics-server-v0.2.1-7d7b858dd7   0         0         0       5h
 ```
 
 ### Terraform
@@ -868,7 +1090,7 @@ In case of using docker-machine do nex steps. Copy this files to docker-host mac
 #### Manual deploy app
 
 ```
- $ > docker-machine create --google-project docker-223411 --driver google  --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b docker-host
+ $ > docker-machine create --google-project docker-223xxx --driver google  --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b docker-host
 $ > eval $(docker-machine env docker-host)
 
 $ > docker-machine ls
