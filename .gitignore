@@ -21,3 +21,4 @@ vault.key
 *.pem
 *.csr
 .env
+Gitlab_ci
