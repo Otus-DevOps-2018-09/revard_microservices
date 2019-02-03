@@ -148,7 +148,47 @@ $> helm del --purge reddit-test
 release "reddit-test" deleted
 ```
 
+### Gitlab
 
+#### Install
+
+```
+$> helm repo add gitlab https://charts.gitlab.io
+"gitlab" has been added to your repositories
+$> helm fetch gitlab/gitlab-omnibus --version 0.1.37 --untar
+$> cd gitlab-omnibus
+$> helm install --name gitlab . -f values.yaml
+NAME:   gitlab
+LAST DEPLOYED: Sun Feb  3 16:54:55 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+
+$>  kubectl get service -n nginx-ingress nginx
+NAME    TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)                                   AGE
+nginx   LoadBalancer   10.7.248.32   35.240.93.**   80:31622/TCP,443:30976/TCP,22:32067/TCP   1m
+$> echo "35.240.93.** gitlab-gitlab staging production” >> /etc/hosts
+
+Create local repo
+```
+cd ../post/
+└─$> git init
+Initialized empty Git repository in /home/alf/revard_microservices/kubernetes/Gitlab_ci/post/.git/
+$> git remote add origin http://gitlab-gitlab/revard/post.git
+$> git add .
+$> git commit -m “init”
+$> git push origin master
+```
+
+```
+
+After release deploy
+```
+$> helm ls
+NAME                    REVISION        UPDATED                         STATUS          CHART                   APP VERSION     NAMESPACE
+gitlab                  1               Sun Feb  3 17:52:29 2019        DEPLOYED        gitlab-omnibus-0.1.37                   default
+review-revard-ui-8s4lb9 1               Sun Feb  3 19:27:58 2019        DEPLOYED        reddit-0.1.0                            review`
+```
 
 
 ## HW-23 Kubernetes-3
