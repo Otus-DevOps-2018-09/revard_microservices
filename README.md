@@ -168,6 +168,7 @@ $>  kubectl get service -n nginx-ingress nginx
 NAME    TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)                                   AGE
 nginx   LoadBalancer   10.7.248.32   35.240.93.**   80:31622/TCP,443:30976/TCP,22:32067/TCP   1m
 $> echo "35.240.93.** gitlab-gitlab staging production” >> /etc/hosts
+```
 
 Create local repo
 ```
@@ -178,8 +179,6 @@ $> git remote add origin http://gitlab-gitlab/revard/post.git
 $> git add .
 $> git commit -m “init”
 $> git push origin master
-```
-
 ```
 
 After release deploy
