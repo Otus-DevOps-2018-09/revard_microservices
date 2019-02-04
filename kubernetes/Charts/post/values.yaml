@@ -1,10 +1,10 @@
 ---
 service:
-  internalPort: 9292
-  externalPort: 9292
+  internalPort: 5000
+  externalPort: 5000
 
 image:
   repository: revard/post
   tag: latest
 
-databaseHost: post-db
+databaseHost:
