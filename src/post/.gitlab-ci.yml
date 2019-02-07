@@ -59,6 +59,25 @@ review:
   except:
     - master
 
+stop_review:
+  stage: cleanup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - install_dependencies
+    - delete
+  environment:
+    name: review/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
+  allow_failure: true
+  only:
+    refs:
+      - branches
+    kubernetes: active
+  except:
+    - master
+
 .auto_devops: &auto_devops |
   [[ "$TRACE" ]] && set -x
   export CI_REGISTRY="index.docker.io"
@@ -181,22 +200,3 @@ review:
   
 before_script:
   - *auto_devops
-
-stop_review:
-  stage: cleanup
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - install_dependencies
-    - delete
-  environment:
-    name: review/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
-    action: stop
-  when: manual
-  allow_failure: true
-  only:
-    refs:
-      - branches
-    kubernetes: active
-  except:
-    - master
