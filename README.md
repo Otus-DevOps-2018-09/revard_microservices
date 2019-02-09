@@ -1,5 +1,195 @@
 # Otus devops course [Microservices]
 
+## HW-24 Kubernetes-4
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-4)
+
+### Install
+
+Clone repo.
+
+Config commands after `terraform apply` in `kubernetes/terraform/gck`
+```
+$> gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-b --project docker-******
+$> cd kubernetes/reddit
+$> kubectl apply -f tiller.yml
+$> helm init --service-account tiller
+```
+
+### Helm  - The Kubernetes Package Manager
+
+#### Install
+
+Download, untar and copy to bin dir  https://github.com/helm/helm/releases 
+
+#### Tiller
+
+Tiller is the in-cluster component of Helm. It interacts directly with the Kubernetes API server to install, upgrade, query, and remove Kubernetes resources. It also stores the objects that represent releases.
+
+```
+$ > kubectl apply -f tiller.yml
+serviceaccount/tiller created
+
+$ > helm init --service-account tiller
+...
+Creating /h/ome/user/.helm/repository/repositories.yaml
+Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com
+Adding local repo with URL: http://127.0.0.1:8879/charts
+$HELM_HOME has been configured at /home/user/.helm.
+...
+
+$ >  kubectl get pods -n kube-system --selector app=helm
+NAME                             READY   STATUS    RESTARTS   AGE
+tiller-deploy-689d79895f-6lb5n   1/1     Running   0          1m
+```
+
+#### Run helm pkg
+
+```
+$ > helm install --name test-ui-1 ui/
+NAME:   test-ui-1
+LAST DEPLOYED: Wed Jan 30 11:12:52 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+
+$ >  helm ls
+NAME            REVISION        UPDATED                         STATUS          CHART           APP VERSION     NAMESPACE
+test-ui-1       1               Wed Jan 30 11:12:52 2019        DEPLOYED        ui-1.0.0        1               default
+
+```
+
+```
+$> helm dep update
+Hang tight while we grab the latest from your chart repositories...
+...Unable to get an update from the "local" chart repository (http://127.0.0.1:8879/charts):
+        Get http://127.0.0.1:8879/charts/index.yaml: dial tcp 127.0.0.1:8879: connect: connection refused
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈Happy Helming!⎈
+Saving 4 charts
+Downloading mongodb from repo https://kubernetes-charts.storage.googleapis.com
+Deleting outdated charts
+alf@alf-pad~/revard_microservices/kubernetes/Charts/reddit (kubernetes-4)
+└─$> tree
+.
+├── charts
+│   ├── comment-1.0.0.tgz
+│   ├── mongodb-0.4.18.tgz
+│   ├── post-1.0.0.tgz
+│   └── ui-1.0.0.tgz
+├── Chart.yaml
+├── requirements.lock
+├── requirements.yaml
+└── values.yaml
+
+1 directory, 8 files
+```
+
+```
+$>  helm search mongo
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+stable/mongodb                  5.3.1           4.0.5           NoSQL document-oriented database that stores JSON-like do...
+stable/mongodb-replicaset       3.9.0           3.6             NoSQL document-oriented database that stores JSON-like do...
+stable/unifi                    0.2.8           5.9.29          Ubiquiti Network's Unifi Controller
+```
+
+Install in dir `kubernetes/Charts`
+```
+$> helm install reddit --name reddit-test
+NAME:   reddit-test
+LAST DEPLOYED: Sat Feb  2 17:05:14 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1beta1/Ingress
+NAME            HOSTS  ADDRESS  PORTS  AGE
+reddit-test-ui  *      80       1s
+
+==> v1/Pod(related)
+NAME                                  READY  STATUS             RESTARTS  AGE
+reddit-test-comment-69b855845d-5zf7w  0/1    ContainerCreating  0         1s
+reddit-test-comment-69b855845d-kzc54  0/1    ContainerCreating  0         1s
+reddit-test-comment-69b855845d-q75ws  0/1    ContainerCreating  0         1s
+reddit-test-mongodb-7cc9bcc5bb-9q4c2  0/1    Pending            0         1s
+reddit-test-post-5fb5f76d54-lhfzg     0/1    ContainerCreating  0         1s
+reddit-test-post-5fb5f76d54-vhvd4     0/1    ContainerCreating  0         1s
+reddit-test-post-5fb5f76d54-xf5fk     0/1    ContainerCreating  0         1s
+reddit-test-ui-5ccbc97c55-fwmxl       0/1    ContainerCreating  0         1s
+
+==> v1/Secret
+NAME                 TYPE    DATA  AGE
+reddit-test-mongodb  Opaque  2     1s
+
+==> v1/PersistentVolumeClaim
+NAME                 STATUS   VOLUME    CAPACITY  ACCESS MODES  STORAGECLASS  AGE
+reddit-test-mongodb  Pending  standard  1s
+
+==> v1/Service
+NAME                 TYPE       CLUSTER-IP    EXTERNAL-IP  PORT(S)         AGE
+reddit-test-comment  ClusterIP  10.7.250.28   <none>       5000/TCP        1s
+reddit-test-mongodb  ClusterIP  10.7.245.147  <none>       27017/TCP       1s
+reddit-test-post     ClusterIP  10.7.243.81   <none>       5000/TCP        1s
+reddit-test-ui       NodePort   10.7.252.97   <none>       9292:30570/TCP  1s
+
+==> v1beta1/Deployment
+NAME                 DESIRED  CURRENT  UP-TO-DATE  AVAILABLE  AGE
+reddit-test-comment  3        3        3           0          1s
+reddit-test-mongodb  1        1        1           0          1s
+reddit-test-post     3        3        3           0          1s
+reddit-test-ui       1        1        1           0          1s
+
+$> kubectl get ingress
+NAME             HOSTS   ADDRESS         PORTS   AGE
+reddit-test-ui   *       35.241.37.**   80      1m
+```
+Delete
+```
+$> helm del --purge reddit-test
+release "reddit-test" deleted
+```
+
+### Gitlab
+
+#### Install
+
+```
+$> helm repo add gitlab https://charts.gitlab.io
+"gitlab" has been added to your repositories
+$> helm fetch gitlab/gitlab-omnibus --version 0.1.37 --untar
+$> cd gitlab-omnibus
+$> helm install --name gitlab . -f values.yaml
+NAME:   gitlab
+LAST DEPLOYED: Sun Feb  3 16:54:55 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+
+$>  kubectl get service -n nginx-ingress nginx
+NAME    TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)                                   AGE
+nginx   LoadBalancer   10.7.248.32   35.240.93.**   80:31622/TCP,443:30976/TCP,22:32067/TCP   1m
+$> echo "35.240.93.** gitlab-gitlab staging production” >> /etc/hosts
+```
+
+Create local repo
+```
+cd ../post/
+└─$> git init
+Initialized empty Git repository in /home/alf/revard_microservices/kubernetes/Gitlab_ci/post/.git/
+$> git remote add origin http://gitlab-gitlab/revard/post.git
+$> git add .
+$> git commit -m “init”
+$> git push origin master
+```
+
+After release deploy
+```
+$> helm ls
+NAME                    REVISION        UPDATED                         STATUS          CHART                   APP VERSION     NAMESPACE
+gitlab                  1               Sun Feb  3 17:52:29 2019        DEPLOYED        gitlab-omnibus-0.1.37                   default
+review-revard-ui-8s4lb9 1               Sun Feb  3 19:27:58 2019        DEPLOYED        reddit-0.1.0                            review`
+```
+
+
 ## HW-23 Kubernetes-3
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-3)
 
