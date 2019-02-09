@@ -1,5 +1,163 @@
 # Otus devops course [Microservices]
 
+## HW-25 Kubernetes-5
+![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-4)
+
+### Install
+
+Clone repo.
+
+Config commands after `terraform apply` in `kubernetes/terraform/gck`
+```
+$> gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-b --project docker-******
+$> cd kubernetes/reddit
+$> kubectl apply -f tiller.yml
+$> helm init --service-account tiller
+```
+
+### Prepare  
+
+Install ingress nginx controller 
+```
+$> helm install stable/nginx-ingress --name nginx
+NAME:   nginx
+LAST DEPLOYED: Sat Feb  9 18:33:35 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+
+$> kubectl get svc
+NAME                                  TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)                      AGE
+kubernetes                            ClusterIP      10.7.240.1     <none>         443/TCP                      21m
+nginx-nginx-ingress-controller        LoadBalancer   10.7.252.54    34.76.190.29   80:30281/TCP,443:31181/TCP   2m
+nginx-nginx-ingress-default-backend   ClusterIP      10.7.246.149   <none>         80/TCP                       2m
+
+$> sudo echo "34.76.190.29 reddit reddit-prometheus reddit-grafana reddit-non-prod production reddit-kibana staging prod" \
+>> /etc/hosts
+
+```
+
+### Monitoring in k8s
+
+#### Main components
+
+* prometheus - log server
+* grafana - metrics visualisation
+* alertmanager -  prometheus alert component
+* diferent prometheus export metrics 
+
+#### Install Prometheus
+
+```
+$> cd kubernetes/Charts && helm fetch --untar stable/prometheus
+```
+
+#### Run prometheus
+
+```
+$> cd kubernetes/Charts/prometheus && helm upgrade prom . -f custom_values.yml --install
+Release "prom" does not exist. Installing it now.
+NAME:   prom
+LAST DEPLOYED: Sat Feb  9 18:45:16 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+```
+
+#### Update for apply config
+```
+$>  helm upgrade prom . -f custom_values.yml --install
+Release "prom" has been upgraded. Happy Helming!
+LAST DEPLOYED: Sat Feb  9 18:54:47 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+```
+
+Go to http://reddit-prometheus/graph
+
+### Grafana
+
+#### Install 
+
+```
+$> cd kubernetes/Charts && helm upgrade --install grafana stable/grafana --set adminPassword=admin \
+--set service.type=NodePort \
+--set ingress.enabled=true \
+--set ingress.hosts={reddit-grafana}
+Release "grafana" does not exist. Installing it now.
+NAME:   grafana
+LAST DEPLOYED: Sat Feb  9 19:23:08 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+NOTES:
+1. Get your 'admin' user password by running:
+
+   kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+2. The Grafana server can be accessed via port 80 on the following DNS name from within your cluster:
+
+   grafana.default.svc.cluster.local
+
+   From outside the cluster, the server URL(s) are:
+     http://reddit-grafana
+
+
+3. Login with the password from step 1 and the username: admin
+#################################################################################
+######   WARNING: Persistence is disabled!!! You will lose your data when   #####
+######            the Grafana pod is terminated.                            #####
+#################################################################################
+
+Alternative path to get password:
+
+$> kubectl exec -it grafana-6f48974dbf-hlbwl env | grep GF_SECURITY_ADMIN_PASSWORD
+GF_SECURITY_ADMIN_PASSWORD=wfId4Z5r47bi6bDwlJjUtdaQn5P2jAFiPDd5
+```
+
+Go to http://reddit-grafana
+
+### Logging EFK
+
+Set node enought for elastic
+```
+$> kubectl label node gke-standard-cluster-1-default-pool-0bc718cf-6jr2 elastichost=true
+node/gke-standard-cluster-1-default-pool-0bc718cf-6jr2 labeled
+
+$>  kubectl apply -f ./efk
+persistentvolumeclaim/elasticsearch-logging-claim created
+service/elasticsearch-logging created
+statefulset.apps/elasticsearch-logging created
+configmap/fluentd-es-config-v0.1.1 created
+daemonset.apps/fluentd-es-v2.0.2 created
+
+$> helm upgrade --install kibana stable/kibana \
+> --set "ingress.enabled=true" \
+> --set "ingress.hosts={reddit-kibana}" \
+> --set "env.ELASTICSEARCH_URL=http://elasticsearch-logging:9200" \
+> --version 0.1.1
+Release "kibana" does not exist. Installing it now.
+NAME:   kibana
+LAST DEPLOYED: Sat Feb  9 20:16:38 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+...
+NOTES:
+To verify that oauth-proxy has started, run:
+
+  kubectl --namespace=default get pods -l "app=kibana"
+
+$> kubectl --namespace=default get pods -l "app=kibana"
+NAME                      READY   STATUS    RESTARTS   AGE
+kibana-7c67ccd8f4-l65lb   0/1     Pending   0          1m
+```
+Go to http://reddit-kibana/
+
+###################
+#That`s all folks!#
+###################
+
 ## HW-24 Kubernetes-4
 ![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/revard_microservices.svg?branch=kubernetes-4)
 
