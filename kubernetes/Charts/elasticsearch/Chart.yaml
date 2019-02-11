@@ -1,0 +1,8 @@
+---
+name: elasticsearch
+version: 1.0.0
+description: OTUS efk application elasticsearch
+maintainers:
+  - name: Taras Zaviryukha
+    email: taraszav@gmail.com
+appVersion: 1.0
